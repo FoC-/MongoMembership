@@ -12,10 +12,12 @@ namespace MongoAccounting.Providers
 {
     public class MongoProfileProvider : ProfileProvider
     {
+        private IMongoGateway mongoGateway;
         public override string ApplicationName { get; set; }
 
         public override void Initialize(string name, NameValueCollection config)
         {
+            mongoGateway = new MongoGateway(ConfigurationManager.AppSettings.Get("MONGOLAB_URI") ?? "mongodb://localhost/Accounting");
             ApplicationName = Util.GetValue(config["applicationName"], HostingEnvironment.ApplicationVirtualPath);
 
             base.Initialize(name, config);
@@ -37,9 +39,9 @@ namespace MongoAccounting.Providers
         {
             int countAffected = 0;
 
-            foreach (User user in usernames.Select(username => MongoGateway.GetByUserName(ApplicationName, username)))
+            foreach (User user in usernames.Select(username => mongoGateway.GetByUserName(ApplicationName, username)))
             {
-                MongoGateway.RemoveUser(user);
+                mongoGateway.RemoveUser(user);
                 countAffected++;
             }
 
@@ -63,11 +65,11 @@ namespace MongoAccounting.Providers
             switch (authenticationOption)
             {
                 case ProfileAuthenticationOption.Anonymous:
-                    users = MongoGateway.GetInactiveAnonymSinceByUserName(ApplicationName, usernameToMatch, userInactiveSinceDate, pageIndex, pageSize, out totalRecords);
+                    users = mongoGateway.GetInactiveAnonymSinceByUserName(ApplicationName, usernameToMatch, userInactiveSinceDate, pageIndex, pageSize, out totalRecords);
                     break;
                 case ProfileAuthenticationOption.Authenticated:
                 case ProfileAuthenticationOption.All:
-                    users = MongoGateway.GetInactiveSinceByUserName(ApplicationName, usernameToMatch, userInactiveSinceDate, pageIndex, pageSize, out totalRecords);
+                    users = mongoGateway.GetInactiveSinceByUserName(ApplicationName, usernameToMatch, userInactiveSinceDate, pageIndex, pageSize, out totalRecords);
                     break;
             }
 
@@ -83,11 +85,11 @@ namespace MongoAccounting.Providers
             switch (authenticationOption)
             {
                 case ProfileAuthenticationOption.Anonymous:
-                    users = MongoGateway.GetAllAnonymByUserName(ApplicationName, usernameToMatch, pageIndex, pageSize, out totalRecords);
+                    users = mongoGateway.GetAllAnonymByUserName(ApplicationName, usernameToMatch, pageIndex, pageSize, out totalRecords);
                     break;
                 case ProfileAuthenticationOption.Authenticated:
                 case ProfileAuthenticationOption.All:
-                    users = MongoGateway.GetAllByUserName(ApplicationName, usernameToMatch, pageIndex, pageSize, out totalRecords);
+                    users = mongoGateway.GetAllByUserName(ApplicationName, usernameToMatch, pageIndex, pageSize, out totalRecords);
                     break;
             }
 
@@ -102,11 +104,11 @@ namespace MongoAccounting.Providers
             switch (authenticationOption)
             {
                 case ProfileAuthenticationOption.Anonymous:
-                    users = MongoGateway.GetAllInactiveAnonymSince(ApplicationName, userInactiveSinceDate, pageIndex, pageSize, out totalRecords);
+                    users = mongoGateway.GetAllInactiveAnonymSince(ApplicationName, userInactiveSinceDate, pageIndex, pageSize, out totalRecords);
                     break;
                 case ProfileAuthenticationOption.Authenticated:
                 case ProfileAuthenticationOption.All:
-                    users = MongoGateway.GetAllInactiveSince(ApplicationName, userInactiveSinceDate, pageIndex, pageSize, out totalRecords);
+                    users = mongoGateway.GetAllInactiveSince(ApplicationName, userInactiveSinceDate, pageIndex, pageSize, out totalRecords);
                     break;
             }
 
@@ -122,11 +124,11 @@ namespace MongoAccounting.Providers
             switch (authenticationOption)
             {
                 case ProfileAuthenticationOption.Anonymous:
-                    users = MongoGateway.GetAllAnonym(ApplicationName, pageIndex, pageSize, out totalRecords);
+                    users = mongoGateway.GetAllAnonym(ApplicationName, pageIndex, pageSize, out totalRecords);
                     break;
                 case ProfileAuthenticationOption.Authenticated:
                 case ProfileAuthenticationOption.All:
-                    users = MongoGateway.GetAll(ApplicationName, pageIndex, pageSize, out totalRecords);
+                    users = mongoGateway.GetAll(ApplicationName, pageIndex, pageSize, out totalRecords);
                     break;
             }
 
@@ -156,7 +158,7 @@ namespace MongoAccounting.Providers
             if (username.IsNullOrWhiteSpace() || collection.Count < 1)
                 return settingsPropertyValueCollection;
 
-            User user = MongoGateway.GetByUserName(ApplicationName, username);
+            User user = mongoGateway.GetByUserName(ApplicationName, username);
 
             foreach (SettingsProperty property in collection)
             {
@@ -173,7 +175,7 @@ namespace MongoAccounting.Providers
             }
 
             user.LastActivityDate = DateTime.Now;
-            MongoGateway.UpdateUser(user);
+            mongoGateway.UpdateUser(user);
 
             return settingsPropertyValueCollection;
         }
@@ -196,7 +198,7 @@ namespace MongoAccounting.Providers
                 values.Add(value.Name, value.PropertyValue);
             }
 
-            var user = MongoGateway.GetByUserName(ApplicationName, username)
+            var user = mongoGateway.GetByUserName(ApplicationName, username)
                     ?? new User
                     {
                         ApplicationName = ApplicationName,
@@ -205,7 +207,7 @@ namespace MongoAccounting.Providers
             user.LastActivityDate = DateTime.Now;
             user.LastUpdatedDate = DateTime.Now;
             user.AddValues(values);
-            MongoGateway.UpdateUser(user);
+            mongoGateway.UpdateUser(user);
         }
 
         private static ProfileInfo ToProfileInfo(User user)

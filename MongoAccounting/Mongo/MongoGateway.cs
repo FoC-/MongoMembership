@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Configuration.Provider;
 using System.Linq;
 using MongoAccounting.Utils;
@@ -10,21 +9,19 @@ using MongoDB.Driver.Linq;
 
 namespace MongoAccounting.Mongo
 {
-    internal class MongoGateway
+    public class MongoGateway : IMongoGateway
     {
-        protected static string GetMongoDbConnectionString()
+        public string MongoConnectionString { get; private set; }
+
+        private MongoDatabase DataBase
         {
-            return ConfigurationManager.AppSettings.Get("MONGOLAB_URI") ?? "mongodb://localhost/SnakeBattle";
+            get { return MongoDatabase.Create(MongoConnectionString); }
         }
-        public static MongoDatabase DataBase
-        {
-            get { return MongoDatabase.Create(GetMongoDbConnectionString()); }
-        }
-        public static MongoCollection<User> UsersCollection
+        private MongoCollection<User> UsersCollection
         {
             get { return DataBase.GetCollection<User>(typeof(User).Name); }
         }
-        public static MongoCollection<Role> RolesCollection
+        private MongoCollection<Role> RolesCollection
         {
             get { return DataBase.GetCollection<Role>(typeof(Role).Name); }
         }
@@ -32,32 +29,47 @@ namespace MongoAccounting.Mongo
         static MongoGateway()
         {
             RegisterClassMapping();
+        }
+
+        public MongoGateway(string mongoConnectionString)
+        {
+            MongoConnectionString = mongoConnectionString;
             CreateIndex();
         }
 
+        public void DropUsers()
+        {
+            UsersCollection.Drop();
+        }
+
+        public void DropRoles()
+        {
+            RolesCollection.Drop();
+        }
+
         #region User
-        public static void CreateUser(User user)
+        public void CreateUser(User user)
         {
             UsersCollection.Insert(user);
         }
 
-        public static void UpdateUser(User user)
+        public void UpdateUser(User user)
         {
             UsersCollection.Save(user);
         }
 
-        public static void RemoveUser(User user)
+        public void RemoveUser(User user)
         {
             user.IsDeleted = true;
             UpdateUser(user);
         }
 
-        public static User GetById(string id)
+        public User GetById(string id)
         {
             return UsersCollection.FindOneById(id);
         }
 
-        public static User GetByUserName(string applicationName, string username)
+        public User GetByUserName(string applicationName, string username)
         {
             if (username.IsNullOrWhiteSpace())
                 return null;
@@ -78,8 +90,11 @@ namespace MongoAccounting.Mongo
             }
         }
 
-        public static User GetByEmail(string applicationName, string email)
+        public User GetByEmail(string applicationName, string email)
         {
+            if (UsersCollection.Count() == 0)
+                return null;
+
             return UsersCollection
                     .AsQueryable()
                     .Single(user
@@ -88,7 +103,7 @@ namespace MongoAccounting.Mongo
                         && user.IsDeleted == false);
         }
 
-        public static IEnumerable<User> GetAllByEmail(string applicationName, string email, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllByEmail(string applicationName, string email, int pageIndex, int pageSize, out int totalRecords)
         {
             var users = UsersCollection
                         .AsQueryable()
@@ -101,7 +116,7 @@ namespace MongoAccounting.Mongo
             return users.Skip(pageIndex * pageSize).Take(pageSize);
         }
 
-        public static IEnumerable<User> GetAllByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
         {
             var users = UsersCollection
                         .AsQueryable()
@@ -114,7 +129,7 @@ namespace MongoAccounting.Mongo
             return users.Skip(pageIndex * pageSize).Take(pageSize);
         }
 
-        public static IEnumerable<User> GetAllAnonymByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllAnonymByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
         {
             var users = UsersCollection
                 .AsQueryable()
@@ -128,7 +143,7 @@ namespace MongoAccounting.Mongo
             return users.Skip(pageIndex * pageSize).Take(pageSize);
         }
 
-        public static IEnumerable<User> GetAll(string applicationName, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAll(string applicationName, int pageIndex, int pageSize, out int totalRecords)
         {
             totalRecords = (int)UsersCollection.Count();
             return UsersCollection
@@ -140,7 +155,7 @@ namespace MongoAccounting.Mongo
                     .Take(pageSize);
         }
 
-        public static IEnumerable<User> GetAllAnonym(string applicationName, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllAnonym(string applicationName, int pageIndex, int pageSize, out int totalRecords)
         {
             var users = UsersCollection
                 .AsQueryable()
@@ -153,7 +168,7 @@ namespace MongoAccounting.Mongo
             return users.Skip(pageIndex * pageSize).Take(pageSize);
         }
 
-        public static IEnumerable<User> GetAllInactiveSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllInactiveSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
         {
             var users = UsersCollection
                         .AsQueryable()
@@ -167,7 +182,7 @@ namespace MongoAccounting.Mongo
                     .Take(pageSize);
         }
 
-        public static IEnumerable<User> GetAllInactiveAnonymSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllInactiveAnonymSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
         {
             var users = UsersCollection
                         .AsQueryable()
@@ -182,7 +197,7 @@ namespace MongoAccounting.Mongo
                     .Take(pageSize);
         }
 
-        public static IEnumerable<User> GetInactiveSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetInactiveSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
         {
             var users = UsersCollection
                         .AsQueryable()
@@ -197,7 +212,7 @@ namespace MongoAccounting.Mongo
                     .Take(pageSize);
         }
 
-        public static IEnumerable<User> GetInactiveAnonymSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetInactiveAnonymSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
         {
             var users = UsersCollection
                         .AsQueryable()
@@ -213,7 +228,7 @@ namespace MongoAccounting.Mongo
                     .Take(pageSize);
         }
 
-        public static int GetUserForPeriodOfTime(string applicationName, TimeSpan timeSpan)
+        public int GetUserForPeriodOfTime(string applicationName, TimeSpan timeSpan)
         {
             return UsersCollection
                     .AsQueryable()
@@ -224,12 +239,12 @@ namespace MongoAccounting.Mongo
         #endregion
 
         #region Role
-        public static void CreateRole(Role role)
+        public void CreateRole(Role role)
         {
             RolesCollection.Insert(role);
         }
 
-        public static string[] GetAllRoles(string applicationName)
+        public string[] GetAllRoles(string applicationName)
         {
             return RolesCollection
                     .AsQueryable()
@@ -238,7 +253,7 @@ namespace MongoAccounting.Mongo
                     .ToArray();
         }
 
-        public static string[] GetRolesForUser(string applicationName, string username)
+        public string[] GetRolesForUser(string applicationName, string username)
         {
             if (username.IsNullOrWhiteSpace())
                 return null;
@@ -252,7 +267,7 @@ namespace MongoAccounting.Mongo
                     .ToArray();
         }
 
-        public static string[] GetUsersInRole(string applicationName, string roleName)
+        public string[] GetUsersInRole(string applicationName, string roleName)
         {
             return UsersCollection
                     .AsQueryable()
@@ -263,7 +278,7 @@ namespace MongoAccounting.Mongo
                     .ToArray();
         }
 
-        public static bool IsUserInRole(string applicationName, string username, string roleName)
+        public bool IsUserInRole(string applicationName, string username, string roleName)
         {
             return UsersCollection
                     .AsQueryable()
@@ -272,7 +287,7 @@ namespace MongoAccounting.Mongo
                         && user.Roles.Contains(roleName));
         }
 
-        public static bool IsRoleExists(string applicationName, string roleName)
+        public bool IsRoleExists(string applicationName, string roleName)
         {
             return RolesCollection
                     .AsQueryable()
@@ -331,7 +346,7 @@ namespace MongoAccounting.Mongo
             }
         }
 
-        private static void CreateIndex()
+        private void CreateIndex()
         {
             UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName));
             UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Email));
@@ -347,11 +362,7 @@ namespace MongoAccounting.Mongo
 
             RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName));
             RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName), Util.GetElementNameFor<Role>(_ => _.RoleName));
-
-
         }
         #endregion
-
-
     }
 }
