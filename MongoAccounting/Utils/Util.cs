@@ -19,6 +19,11 @@ namespace MongoAccounting.Utils
             var type = typeof(TSource);
 
             var memberExpression = propertyLambda.Body as MemberExpression;
+            if (memberExpression == null && propertyLambda.Body is UnaryExpression)
+            {
+                var unaryExpression = (UnaryExpression)propertyLambda.Body;
+                memberExpression = unaryExpression.Operand as MemberExpression;
+            }
             memberExpression.EnsureNotNull("memberExpression");
 
             var propInfo = memberExpression.Member as PropertyInfo;
