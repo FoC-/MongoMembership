@@ -9,3 +9,4 @@ TestResults
 *.user
 *.ncrunchsolution
 *.ncrunchproject
+*crunchsolution*
