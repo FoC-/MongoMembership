@@ -9,7 +9,7 @@ using MongoDB.Driver.Linq;
 
 namespace MongoAccounting.Mongo
 {
-    public class MongoGateway : IMongoGateway
+    internal class MongoGateway : IMongoGateway
     {
         public string MongoConnectionString { get; private set; }
 
