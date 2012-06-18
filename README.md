@@ -6,7 +6,6 @@ MongoAccounting
 ## Configuration
 MongoAccounting should been added and configured in your Web.config file:
 
-<?xml version="1.0"?>
 <configuration>
 	<appSettings>
 	    <add key="LOCALHOST_test" value="mongodb://localhost/TestMongoMembershipProvider"/>
