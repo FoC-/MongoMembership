@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using MongoAccounting.Mongo;
+using MongoAccounting.Providers;
 
 namespace MongoAccounting.Tests
 {
@@ -38,7 +40,19 @@ namespace MongoAccounting.Tests
 
         public static IMongoGateway CreateMongoGateway()
         {
-            return new MongoGateway("mongodb://localhost/TestStorage");
+            return new MongoGateway("mongodb://localhost/TestMongoGateway");
+        }
+
+        public static MongoMembershipProvider CreateProvider()
+        {
+            return new MongoMembershipProvider();
+        }
+
+        public static NameValueCollection CreateConfig()
+        {
+            var config = new NameValueCollection();
+            config.Add("connectionStringKeys", "LOCALHOST_test ,MONGOLAB_URI, ;LOCALHOST");
+            return config;
         }
     }
 }
