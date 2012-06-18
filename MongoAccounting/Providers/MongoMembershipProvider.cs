@@ -26,6 +26,8 @@ namespace MongoAccounting.Providers
         #endregion
 
         #region Properties
+        internal string MongoConnectionString { get; private set; }
+
         public override string ApplicationName { get; set; }
 
         public override bool EnablePasswordReset
@@ -82,8 +84,6 @@ namespace MongoAccounting.Providers
         #region Public Methods
         public override void Initialize(string name, NameValueCollection config)
         {
-            mongoGateway = new MongoGateway(ConfigurationManager.AppSettings.Get("MONGOLAB_URI") ?? "mongodb://localhost/Accounting");
-
             ApplicationName = Util.GetValue(config["applicationName"], HostingEnvironment.ApplicationVirtualPath);
 
             this.enablePasswordReset = Util.GetValue(config["enablePasswordReset"], true);
@@ -93,9 +93,12 @@ namespace MongoAccounting.Providers
             this.minRequiredPasswordLength = Util.GetValue(config["minRequiredPasswordLength"], 7);
             this.passwordAttemptWindow = Util.GetValue(config["passwordAttemptWindow"], 10);
             this.passwordFormat = Util.GetValue(config["passwordFormat"], MembershipPasswordFormat.Hashed);
-            this.passwordStrengthRegularExpression = Util.GetValue(config["passwordStrengthRegularExpression"], String.Empty);
+            this.passwordStrengthRegularExpression = Util.GetValue(config["passwordStrengthRegularExpression"], string.Empty);
             this.requiresQuestionAndAnswer = Util.GetValue(config["requiresQuestionAndAnswer"], false);
             this.requiresUniqueEmail = Util.GetValue(config["requiresUniqueEmail"], true);
+            this.MongoConnectionString = ConnectionString(Util.GetValue(config["connectionStringKeys"], string.Empty));
+
+            mongoGateway = new MongoGateway(this.MongoConnectionString);
 
             if (PasswordFormat == MembershipPasswordFormat.Hashed && EnablePasswordRetrieval)
             {
@@ -402,6 +405,25 @@ namespace MongoAccounting.Providers
         #endregion
 
         #region Private Methods
+        private static string ConnectionString(string connectionsettingskeys)
+        {
+            var keys = connectionsettingskeys.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var key in keys)
+            {
+                var name = key.Trim(new[] { ' ' });
+
+                if (name.IsNullOrEmpty())
+                    continue;
+
+                var connectionString = ConfigurationManager.AppSettings.Get(name);
+                if (connectionString == null)
+                    continue;
+
+                return connectionString;
+            }
+            return "mongodb://localhost/Accounting";
+        }
+
         private string DecodePassword(string password, MembershipPasswordFormat membershipPasswordFormat)
         {
             switch (membershipPasswordFormat)
