@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace MongoAccounting.Utils
+namespace MongoMembership.Utils
 {
     internal static class StringExtensions
     {

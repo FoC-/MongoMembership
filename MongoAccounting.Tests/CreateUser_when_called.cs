@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using Machine.Specifications;
-using MongoAccounting.Mongo;
+using MongoMembership.Mongo;
 
-namespace MongoAccounting.Tests
+namespace MongoMembership.Tests
 {
     [Subject(typeof(MongoGateway))]
     internal class CreateUser_when_called : StubsBase

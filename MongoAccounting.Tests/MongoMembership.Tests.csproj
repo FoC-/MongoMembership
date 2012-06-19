@@ -8,8 +8,8 @@
     <ProjectGuid>{2F8CAAD4-2CE2-44BD-A9FF-2E8A171A0757}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MongoAccounting.Tests</RootNamespace>
-    <AssemblyName>MongoAccounting.Tests</AssemblyName>
+    <RootNamespace>MongoMembership.Tests</RootNamespace>
+    <AssemblyName>MongoMembership.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -58,9 +58,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MongoAccounting\MongoAccounting.csproj">
+    <ProjectReference Include="..\MongoAccounting\MongoMembership.csproj">
       <Project>{7CCBAA95-232D-4F1E-A29F-F2168D18AED3}</Project>
-      <Name>MongoAccounting</Name>
+      <Name>MongoMembership</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

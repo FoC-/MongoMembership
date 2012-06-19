@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MongoAccounting
+namespace MongoMembership
 {
-    public class User
+    internal class User
     {
         public string ApplicationName { get; set; }
         public string Id { get; set; }

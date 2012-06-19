@@ -8,8 +8,8 @@
     <ProjectGuid>{7CCBAA95-232D-4F1E-A29F-F2168D18AED3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MongoAccounting</RootNamespace>
-    <AssemblyName>MongoAccounting</AssemblyName>
+    <RootNamespace>MongoMembership</RootNamespace>
+    <AssemblyName>MongoMembership</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

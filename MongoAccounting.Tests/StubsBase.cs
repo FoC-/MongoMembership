@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using MongoAccounting.Mongo;
-using MongoAccounting.Providers;
+using MongoMembership.Mongo;
+using MongoMembership.Providers;
 
-namespace MongoAccounting.Tests
+namespace MongoMembership.Tests
 {
     internal class StubsBase
     {

@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoAccounting", "MongoAccounting\MongoAccounting.csproj", "{7CCBAA95-232D-4F1E-A29F-F2168D18AED3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoMembership", "MongoAccounting\MongoMembership.csproj", "{7CCBAA95-232D-4F1E-A29F-F2168D18AED3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoAccounting.Tests", "MongoAccounting.Tests\MongoAccounting.Tests.csproj", "{2F8CAAD4-2CE2-44BD-A9FF-2E8A171A0757}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoMembership.Tests", "MongoAccounting.Tests\MongoMembership.Tests.csproj", "{2F8CAAD4-2CE2-44BD-A9FF-2E8A171A0757}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoAccounting.Web", "MongoAccounting.Web\MongoAccounting.Web.csproj", "{74BF06C8-B88F-4371-B6BD-B2E400BCA4FD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoMembership.Web", "MongoAccounting.Web\MongoMembership.Web.csproj", "{74BF06C8-B88F-4371-B6BD-B2E400BCA4FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

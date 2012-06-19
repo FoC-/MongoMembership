@@ -1,8 +1,8 @@
 using System.Configuration;
 using Machine.Specifications;
-using MongoAccounting.Providers;
+using MongoMembership.Providers;
 
-namespace MongoAccounting.Tests
+namespace MongoMembership.Tests
 {
     [Subject(typeof(MongoMembershipProvider))]
     internal class When_initilized : StubsBase

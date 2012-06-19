@@ -1,7 +1,7 @@
 using Machine.Specifications;
-using MongoAccounting.Mongo;
+using MongoMembership.Mongo;
 
-namespace MongoAccounting.Tests
+namespace MongoMembership.Tests
 {
     [Subject(typeof(MongoGateway))]
     internal class GetById_when_called : StubsBase
@@ -20,7 +20,7 @@ namespace MongoAccounting.Tests
 
         private It should_return_user_with_same_id_as_created = () =>
         {
-            userReturned.Id.ShouldEqual(userCreated.Id);
+            ShouldExtensionMethods.ShouldEqual<string>(userReturned.Id, userCreated.Id);
         };
 
         private Cleanup all = () =>

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Configuration.Provider;
 using System.Linq;
-using MongoAccounting.Utils;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using MongoMembership.Utils;
 
-namespace MongoAccounting.Mongo
+namespace MongoMembership.Mongo
 {
     internal class MongoGateway : IMongoGateway
     {
@@ -15,15 +15,15 @@ namespace MongoAccounting.Mongo
 
         private MongoDatabase DataBase
         {
-            get { return MongoDatabase.Create(MongoConnectionString); }
+            get { return MongoDatabase.Create(this.MongoConnectionString); }
         }
         private MongoCollection<User> UsersCollection
         {
-            get { return DataBase.GetCollection<User>(typeof(User).Name); }
+            get { return this.DataBase.GetCollection<User>(typeof(User).Name); }
         }
         private MongoCollection<Role> RolesCollection
         {
-            get { return DataBase.GetCollection<Role>(typeof(Role).Name); }
+            get { return this.DataBase.GetCollection<Role>(typeof(Role).Name); }
         }
 
         static MongoGateway()
@@ -33,29 +33,29 @@ namespace MongoAccounting.Mongo
 
         public MongoGateway(string mongoConnectionString)
         {
-            MongoConnectionString = mongoConnectionString;
+            this.MongoConnectionString = mongoConnectionString;
             CreateIndex();
         }
 
         public void DropUsers()
         {
-            UsersCollection.Drop();
+            this.UsersCollection.Drop();
         }
 
         public void DropRoles()
         {
-            RolesCollection.Drop();
+            this.RolesCollection.Drop();
         }
 
         #region User
         public void CreateUser(User user)
         {
-            UsersCollection.Insert(user);
+            this.UsersCollection.Insert(user);
         }
 
         public void UpdateUser(User user)
         {
-            UsersCollection.Save(user);
+            this.UsersCollection.Save(user);
         }
 
         public void RemoveUser(User user)
@@ -66,7 +66,7 @@ namespace MongoAccounting.Mongo
 
         public User GetById(string id)
         {
-            return UsersCollection.FindOneById(id);
+            return this.UsersCollection.FindOneById(id);
         }
 
         public User GetByUserName(string applicationName, string username)
@@ -76,7 +76,7 @@ namespace MongoAccounting.Mongo
 
             try
             {
-                return UsersCollection
+                return this.UsersCollection
                         .AsQueryable()
                         .Single(user
                             => user.ApplicationName == applicationName
@@ -92,10 +92,10 @@ namespace MongoAccounting.Mongo
 
         public User GetByEmail(string applicationName, string email)
         {
-            if (UsersCollection.Count() == 0)
+            if (this.UsersCollection.Count() == 0)
                 return null;
 
-            return UsersCollection
+            return this.UsersCollection
                     .AsQueryable()
                     .Single(user
                         => user.ApplicationName == applicationName
@@ -105,7 +105,7 @@ namespace MongoAccounting.Mongo
 
         public IEnumerable<User> GetAllByEmail(string applicationName, string email, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = UsersCollection
+            var users = this.UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
@@ -118,7 +118,7 @@ namespace MongoAccounting.Mongo
 
         public IEnumerable<User> GetAllByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = UsersCollection
+            var users = this.UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
@@ -131,7 +131,7 @@ namespace MongoAccounting.Mongo
 
         public IEnumerable<User> GetAllAnonymByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = UsersCollection
+            var users = this.UsersCollection
                 .AsQueryable()
                 .Where(user
                     => user.ApplicationName == applicationName
@@ -145,8 +145,8 @@ namespace MongoAccounting.Mongo
 
         public IEnumerable<User> GetAll(string applicationName, int pageIndex, int pageSize, out int totalRecords)
         {
-            totalRecords = (int)UsersCollection.Count();
-            return UsersCollection
+            totalRecords = (int)this.UsersCollection.Count();
+            return this.UsersCollection
                     .AsQueryable()
                     .Where(user
                         => user.ApplicationName == applicationName
@@ -157,7 +157,7 @@ namespace MongoAccounting.Mongo
 
         public IEnumerable<User> GetAllAnonym(string applicationName, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = UsersCollection
+            var users = this.UsersCollection
                 .AsQueryable()
                 .Where(user
                     => user.ApplicationName == applicationName
@@ -170,7 +170,7 @@ namespace MongoAccounting.Mongo
 
         public IEnumerable<User> GetAllInactiveSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = UsersCollection
+            var users = this.UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
@@ -184,7 +184,7 @@ namespace MongoAccounting.Mongo
 
         public IEnumerable<User> GetAllInactiveAnonymSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = UsersCollection
+            var users = this.UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
@@ -199,7 +199,7 @@ namespace MongoAccounting.Mongo
 
         public IEnumerable<User> GetInactiveSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = UsersCollection
+            var users = this.UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
@@ -214,7 +214,7 @@ namespace MongoAccounting.Mongo
 
         public IEnumerable<User> GetInactiveAnonymSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = UsersCollection
+            var users = this.UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
@@ -230,7 +230,7 @@ namespace MongoAccounting.Mongo
 
         public int GetUserForPeriodOfTime(string applicationName, TimeSpan timeSpan)
         {
-            return UsersCollection
+            return this.UsersCollection
                     .AsQueryable()
                     .Count(user
                         => user.ApplicationName == applicationName
@@ -241,7 +241,7 @@ namespace MongoAccounting.Mongo
         #region Role
         public void CreateRole(Role role)
         {
-            RolesCollection.Insert(role);
+            this.RolesCollection.Insert(role);
         }
 
         public void RemoveRole(string applicationName, string roleName)
@@ -255,12 +255,12 @@ namespace MongoAccounting.Mongo
                 }
             };
 
-            RolesCollection.Remove(query);
+            this.RolesCollection.Remove(query);
         }
 
         public string[] GetAllRoles(string applicationName)
         {
-            return RolesCollection
+            return this.RolesCollection
                     .AsQueryable()
                     .Where(role => role.ApplicationName == applicationName)
                     .Select(role => role.RoleName)
@@ -272,7 +272,7 @@ namespace MongoAccounting.Mongo
             if (username.IsNullOrWhiteSpace())
                 return null;
 
-            var roles = UsersCollection
+            var roles = this.UsersCollection
                         .AsQueryable()
                         .Single(user
                             => user.ApplicationName == applicationName
@@ -284,7 +284,7 @@ namespace MongoAccounting.Mongo
 
         public string[] GetUsersInRole(string applicationName, string roleName)
         {
-            return UsersCollection
+            return this.UsersCollection
                     .AsQueryable()
                     .Where(user
                         => user.ApplicationName == applicationName
@@ -295,7 +295,7 @@ namespace MongoAccounting.Mongo
 
         public bool IsUserInRole(string applicationName, string username, string roleName)
         {
-            return UsersCollection
+            return this.UsersCollection
                     .AsQueryable()
                     .Any(user
                         => user.ApplicationName == applicationName
@@ -304,7 +304,7 @@ namespace MongoAccounting.Mongo
 
         public bool IsRoleExists(string applicationName, string roleName)
         {
-            return RolesCollection
+            return this.RolesCollection
                     .AsQueryable()
                     .Any(role
                         => role.ApplicationName == applicationName
@@ -363,20 +363,20 @@ namespace MongoAccounting.Mongo
 
         private void CreateIndex()
         {
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Email));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Username));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles), Util.GetElementNameFor<User>(_ => _.Username));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate), Util.GetElementNameFor<User>(_ => _.Username));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.Username));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Username), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Email));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Username));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles), Util.GetElementNameFor<User>(_ => _.Username));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate), Util.GetElementNameFor<User>(_ => _.Username));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.Username));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Username), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
 
-            RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName));
-            RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName), Util.GetElementNameFor<Role>(_ => _.RoleName));
+            this.RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName));
+            this.RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName), Util.GetElementNameFor<Role>(_ => _.RoleName));
         }
         #endregion
     }

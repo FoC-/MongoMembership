@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Web.Mvc;
 using System.Web.Security;
-using MongoAccounting.Web.Models;
+using MongoMembership.Web.Models;
 
-namespace MongoAccounting.Web.Controllers
+namespace MongoMembership.Web.Controllers
 {
     public class AccountController : Controller
     {

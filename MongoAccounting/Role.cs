@@ -1,6 +1,6 @@
-namespace MongoAccounting
+namespace MongoMembership
 {
-    public class Role
+    internal class Role
     {
         public string ApplicationName { get; set; }
         public string RoleName { get; set; }

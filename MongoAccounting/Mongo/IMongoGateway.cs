@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MongoAccounting.Mongo
+namespace MongoMembership.Mongo
 {
     internal interface IMongoGateway
     {

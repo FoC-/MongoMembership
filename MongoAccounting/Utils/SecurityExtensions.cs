@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace MongoAccounting.Utils
+namespace MongoMembership.Utils
 {
     internal static class SecurityExtensions
     {

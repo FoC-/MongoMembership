@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Web.Mvc;
 
-namespace MongoAccounting.Web.Models
+namespace MongoMembership.Web.Models
 {
 
     public class ChangePasswordModel

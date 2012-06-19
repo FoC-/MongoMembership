@@ -1,6 +1,6 @@
 ﻿using System.Web.Mvc;
 
-namespace MongoAccounting.Web.Controllers
+namespace MongoMembership.Web.Controllers
 {
     public class HomeController : Controller
     {

@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Linq.Expressions;
 
-namespace MongoAccounting.Utils
+namespace MongoMembership.Utils
 {
     internal static class Util
     {

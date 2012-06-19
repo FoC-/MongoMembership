@@ -1,6 +1,6 @@
 using System;
 
-namespace MongoAccounting.Utils
+namespace MongoMembership.Utils
 {
     internal static class EnsureExtensions
     {
