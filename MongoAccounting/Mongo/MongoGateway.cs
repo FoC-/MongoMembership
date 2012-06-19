@@ -272,13 +272,14 @@ namespace MongoAccounting.Mongo
             if (username.IsNullOrWhiteSpace())
                 return null;
 
-            return UsersCollection
-                    .AsQueryable()
-                    .Single(user
-                        => user.ApplicationName == applicationName
-                        && user.Username == username)
-                    .Roles
-                    .ToArray();
+            var roles = UsersCollection
+                        .AsQueryable()
+                        .Single(user
+                            => user.ApplicationName == applicationName
+                            && user.Username == username)
+                        .Roles;
+
+            return roles == null ? null : roles.ToArray();
         }
 
         public string[] GetUsersInRole(string applicationName, string roleName)
