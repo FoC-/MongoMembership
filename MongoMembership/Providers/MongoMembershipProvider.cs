@@ -421,7 +421,7 @@ namespace MongoMembership.Providers
 
                 return connectionString;
             }
-            return "mongodb://localhost/Accounting";
+            return "mongodb://localhost/MongoMembership";
         }
 
         private string DecodePassword(string password, MembershipPasswordFormat membershipPasswordFormat)
