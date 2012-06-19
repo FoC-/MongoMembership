@@ -54,7 +54,7 @@ MongoMembership should been added and configured in your Web.config file
 
 Please notice
 -------------
-Each provider have new attribute _connectionStringKeys_ which could contain coma separated keys(links) to the _appSettings_ section which contain all or one of that keys and value will be connection string to MongoDB
+Each provider have new attribute _connectionStringKeys_ which could contain coma separated keys(links) to the keys in _appSettings_ section. Order of keys is important. Each key in _appSettings_ should be connection string to MongoDB or should absent in config. If no connection string is configured then default: "mongodb://localhost/MongoMembership" will be used.
 
 # P.S.
 Do not forget to give your feedback about this project.
