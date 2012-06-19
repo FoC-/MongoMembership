@@ -6,7 +6,7 @@ using MongoAccounting.Providers;
 
 namespace MongoAccounting.Tests
 {
-    public class StubsBase
+    internal class StubsBase
     {
         public static User CreateUser(string applicationName)
         {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MongoAccounting.Mongo
 {
-    public interface IMongoGateway
+    internal interface IMongoGateway
     {
         string MongoConnectionString { get; }
         void DropUsers();

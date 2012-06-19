@@ -5,7 +5,7 @@ using MongoAccounting.Providers;
 namespace MongoAccounting.Tests
 {
     [Subject(typeof(MongoMembershipProvider))]
-    public class When_initilized : StubsBase
+    internal class When_initilized : StubsBase
     {
         private Establish context = () =>
         {

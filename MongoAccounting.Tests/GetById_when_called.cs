@@ -4,7 +4,7 @@ using MongoAccounting.Mongo;
 namespace MongoAccounting.Tests
 {
     [Subject(typeof(MongoGateway))]
-    public class GetById_when_called : StubsBase
+    internal class GetById_when_called : StubsBase
     {
         private Establish context = () =>
         {

@@ -6,7 +6,7 @@ using MongoAccounting.Mongo;
 namespace MongoAccounting.Tests
 {
     [Subject(typeof(MongoGateway))]
-    public class CreateUser_when_called : StubsBase
+    internal class CreateUser_when_called : StubsBase
     {
         private Establish context = () =>
         {
