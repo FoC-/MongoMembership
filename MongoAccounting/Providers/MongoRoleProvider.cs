@@ -69,6 +69,7 @@ namespace MongoAccounting.Providers
                 throw new ProviderException("This role cannot be deleted because there are users present in it.");
 
             RemoveUsersFromRoles(users, new[] { roleName });
+            mongoGateway.RemoveRole(ApplicationName, roleName);
             return true;
         }
 

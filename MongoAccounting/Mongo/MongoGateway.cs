@@ -244,6 +244,20 @@ namespace MongoAccounting.Mongo
             RolesCollection.Insert(role);
         }
 
+        public void RemoveRole(string applicationName, string roleName)
+        {
+            var query = new QueryDocument
+            {
+                new Dictionary<string, object>
+                {
+                    {Util.GetElementNameFor<Role>(_ => _.ApplicationName), applicationName},
+                    {Util.GetElementNameFor<Role>(_ => _.RoleName), roleName}
+                }
+            };
+
+            RolesCollection.Remove(query);
+        }
+
         public string[] GetAllRoles(string applicationName)
         {
             return RolesCollection

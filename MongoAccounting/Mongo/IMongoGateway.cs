@@ -25,6 +25,7 @@ namespace MongoAccounting.Mongo
         IEnumerable<User> GetInactiveAnonymSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords);
         int GetUserForPeriodOfTime(string applicationName, TimeSpan timeSpan);
         void CreateRole(Role role);
+        void RemoveRole(string applicationName, string roleName);
         string[] GetAllRoles(string applicationName);
         string[] GetRolesForUser(string applicationName, string username);
         string[] GetUsersInRole(string applicationName, string roleName);
