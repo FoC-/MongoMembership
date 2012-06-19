@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoAccounting", "MongoAcc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoAccounting.Tests", "MongoAccounting.Tests\MongoAccounting.Tests.csproj", "{2F8CAAD4-2CE2-44BD-A9FF-2E8A171A0757}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoAccounting.Web", "MongoAccounting.Web\MongoAccounting.Web.csproj", "{74BF06C8-B88F-4371-B6BD-B2E400BCA4FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{2F8CAAD4-2CE2-44BD-A9FF-2E8A171A0757}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F8CAAD4-2CE2-44BD-A9FF-2E8A171A0757}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F8CAAD4-2CE2-44BD-A9FF-2E8A171A0757}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74BF06C8-B88F-4371-B6BD-B2E400BCA4FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74BF06C8-B88F-4371-B6BD-B2E400BCA4FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74BF06C8-B88F-4371-B6BD-B2E400BCA4FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74BF06C8-B88F-4371-B6BD-B2E400BCA4FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
