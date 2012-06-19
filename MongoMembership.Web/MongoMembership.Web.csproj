@@ -102,7 +102,7 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MongoAccounting\MongoMembership.csproj">
+    <ProjectReference Include="..\MongoMembership\MongoMembership.csproj">
       <Project>{7CCBAA95-232D-4F1E-A29F-F2168D18AED3}</Project>
       <Name>MongoMembership</Name>
     </ProjectReference>
