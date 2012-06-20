@@ -3,6 +3,9 @@ MongoMembership
 
 Contain ASP.NET providers for working with Membership, Role, Profile via MongoDB.
 
+## Nuget
+https://nuget.org/packages/MongoMembership
+
 ## Configuration
 MongoMembership should been added and configured in your Web.config file
           

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>MongoMembership</id>
+    <version>0.0.7</version>
+    <authors>Kush</authors>
+    <owners>Kush</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Store user profiles and roles in MongoDB storage. And allow easy access to use thems from MemberShipProvider, ProfileProvider, RoleProvider in ASP.NET</description>
+    <copyright>FoC © 2012</copyright>
+    <tags>mongo membership providers role profile mvc asp.net</tags>
+    <dependencies>
+      <dependency id="mongocsharpdriver" version="1.4.2" />
+    </dependencies>
+  </metadata>
+</package>

@@ -1,0 +1,44 @@
+<configuration>
+<appSettings>
+    <add key="MongoUri" value="mongodb://localhost/TestMongoMembershipProvider"/>
+</appSettings>
+    <system.web>
+        <membership defaultProvider="MongoMembershipProvider">
+            <providers>
+                 <clear/>
+                 <add name="MongoMembershipProvider"
+                      type="MongoMembership.Providers.MongoMembershipProvider"
+                      connectionStringKeys="MongoUri"
+                      enablePasswordRetrieval="false"
+                      enablePasswordReset="true"
+                      requiresQuestionAndAnswer="false"
+                      requiresUniqueEmail="false"
+                      maxInvalidPasswordAttempts="5"
+                      minRequiredPasswordLength="6"
+                      minRequiredNonalphanumericCharacters="0"
+                      passwordAttemptWindow="10"
+                      applicationName="/" />
+            </providers>
+        </membership>
+
+        <profile defaultProvider="MongoProfileProvider">
+            <providers>
+                <clear/>
+                <add name="MongoProfileProvider"
+                     type="MongoMembership.Providers.MongoProfileProvider"
+                     connectionStringKeys="MongoUri"
+                     applicationName="/" />
+            </providers>
+        </profile>
+
+        <roleManager defaultProvider="MongoRoleProvider">
+            <providers>
+                <clear/>
+                <add name="MongoRoleProvider"
+                     type="MongoMembership.Providers.MongoRoleProvider"
+                     connectionStringKeys="MongoUri"
+                     applicationName="/" />
+            </providers>
+        </roleManager>
+    </system.web>
+</configuration>
