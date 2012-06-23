@@ -2,11 +2,11 @@
 <package >
   <metadata>
     <id>MongoMembership</id>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
     <authors>Kush</authors>
     <owners>Kush</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Store user profiles and roles in MongoDB storage. And allow easy access to use thems from MemberShipProvider, ProfileProvider, RoleProvider in ASP.NET</description>
+    <description>Store user profiles and roles in MongoDB storage. And allow easy access to use thems from MemberShipProvider, ProfileProvider, RoleProvider in ASP.NET Project on github: https://github.com/FoC-/MongoMembership</description>
     <copyright>FoC © 2012</copyright>
     <tags>mongo membership providers role profile mvc asp.net</tags>
     <dependencies>

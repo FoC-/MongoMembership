@@ -12,13 +12,16 @@ namespace MongoMembership.Providers
 {
     public class MongoProfileProvider : ProfileProvider
     {
+        internal string MongoConnectionString { get; private set; }
         private IMongoGateway mongoGateway;
         public override string ApplicationName { get; set; }
 
         public override void Initialize(string name, NameValueCollection config)
         {
-            this.mongoGateway = new MongoGateway(ConfigurationManager.AppSettings.Get("MONGOLAB_URI") ?? "mongodb://localhost/Accounting");
             this.ApplicationName = Util.GetValue(config["applicationName"], HostingEnvironment.ApplicationVirtualPath);
+
+            this.MongoConnectionString = ConnectionString(Util.GetValue(config["connectionStringKeys"], string.Empty));
+            this.mongoGateway = new MongoGateway(MongoConnectionString);
 
             base.Initialize(name, config);
         }
@@ -210,6 +213,26 @@ namespace MongoMembership.Providers
             this.mongoGateway.UpdateUser(user);
         }
 
+        #region Private Methods
+        private static string ConnectionString(string connectionsettingskeys)
+        {
+            var keys = connectionsettingskeys.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var key in keys)
+            {
+                var name = key.Trim(new[] { ' ' });
+
+                if (name.IsNullOrEmpty())
+                    continue;
+
+                var connectionString = ConfigurationManager.AppSettings.Get(name);
+                if (connectionString == null)
+                    continue;
+
+                return connectionString;
+            }
+            return "mongodb://localhost/MongoMembership";
+        }
+
         private static ProfileInfo ToProfileInfo(User user)
         {
             return new ProfileInfo(user.Username, user.IsAnonymous, user.LastActivityDate, user.LastUpdatedDate, 0);
@@ -226,5 +249,6 @@ namespace MongoMembership.Providers
 
             return profileCollection;
         }
+        #endregion
     }
 }
