@@ -295,10 +295,11 @@ namespace MongoMembership.Mongo
 
         public bool IsUserInRole(string applicationName, string username, string roleName)
         {
-            return this.UsersCollection
+            return UsersCollection
                     .AsQueryable()
                     .Any(user
                         => user.ApplicationName == applicationName
+                        && user.Username == username
                         && user.Roles.Contains(roleName));
         }
 
