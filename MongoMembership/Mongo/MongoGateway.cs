@@ -74,42 +74,34 @@ namespace MongoMembership.Mongo
             if (username.IsNullOrWhiteSpace())
                 return null;
 
-            try
-            {
-                return this.UsersCollection
-                        .AsQueryable()
-                        .Single(user
-                            => user.ApplicationName == applicationName
-                            && user.Username == username
-                            && user.IsDeleted == false);
-            }
-            catch (Exception ex)
-            {
-                new ProviderException("Unable to retrieve User information for user '{0}'".F(username), ex);
-                return null;
-            }
+            return UsersCollection
+                    .AsQueryable()
+                    .SingleOrDefault(user
+                        => user.ApplicationName == applicationName
+                        && user.UsernameLowercase == username.ToLowerInvariant()
+                        && user.IsDeleted == false);
         }
 
         public User GetByEmail(string applicationName, string email)
         {
-            if (this.UsersCollection.Count() == 0)
+            if (UsersCollection.Count() == 0)
                 return null;
 
-            return this.UsersCollection
+            return UsersCollection
                     .AsQueryable()
-                    .Single(user
+                    .SingleOrDefault(user
                         => user.ApplicationName == applicationName
-                        && user.Email == email
+                        && user.EmailLowercase == email.ToLower()
                         && user.IsDeleted == false);
         }
 
         public IEnumerable<User> GetAllByEmail(string applicationName, string email, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = this.UsersCollection
+            var users = UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
-                            && user.Email.ToLowerInvariant().Contains(email.ToLowerInvariant())
+                            && user.EmailLowercase.Contains(email.ToLower())
                             && user.IsDeleted == false);
 
             totalRecords = users.Count();
@@ -118,11 +110,11 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetAllByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = this.UsersCollection
+            var users = UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
-                            && user.Username.ToLowerInvariant().Contains(username.ToLowerInvariant())
+                            && user.UsernameLowercase.Contains(username.ToLowerInvariant())
                             && user.IsDeleted == false);
 
             totalRecords = users.Count();
@@ -131,11 +123,11 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetAllAnonymByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = this.UsersCollection
+            var users = UsersCollection
                 .AsQueryable()
                 .Where(user
                     => user.ApplicationName == applicationName
-                    && user.Username.ToLowerInvariant().Contains(username.ToLowerInvariant())
+                    && user.UsernameLowercase.Contains(username.ToLowerInvariant())
                     && user.IsAnonymous
                     && user.IsDeleted == false);
 
@@ -199,11 +191,11 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetInactiveSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = this.UsersCollection
+            var users = UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
-                            && user.Username.ToLowerInvariant().Contains(username.ToLowerInvariant())
+                            && user.UsernameLowercase.Contains(username.ToLowerInvariant())
                             && user.LastActivityDate <= userInactiveSinceDate
                             && user.IsDeleted == false);
             totalRecords = users.Count();
@@ -218,7 +210,7 @@ namespace MongoMembership.Mongo
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
-                            && user.Username.ToLowerInvariant().Contains(username.ToLowerInvariant())
+                            && user.UsernameLowercase.Contains(username.ToLowerInvariant())
                             && user.LastActivityDate <= userInactiveSinceDate
                             && user.IsAnonymous
                             && user.IsDeleted == false);
@@ -327,9 +319,11 @@ namespace MongoMembership.Mongo
                     cm.MapIdField(c => c.Id);
                     cm.MapProperty(c => c.ApplicationName).SetElementName("ApplicationName");
                     cm.MapProperty(c => c.Username).SetElementName("Username");
+                    cm.MapProperty(c => c.UsernameLowercase).SetElementName("UsernameLowercase");
                     cm.MapProperty(c => c.Comment).SetElementName("Comment");
                     cm.MapProperty(c => c.CreateDate).SetElementName("CreateDate");
                     cm.MapProperty(c => c.Email).SetElementName("Email");
+                    cm.MapProperty(c => c.EmailLowercase).SetElementName("EmailLowercase");
                     cm.MapProperty(c => c.FailedPasswordAnswerAttemptCount).SetElementName("FailedPasswordAnswerAttemptCount");
                     cm.MapProperty(c => c.FailedPasswordAttemptCount).SetElementName("FailedPasswordAttemptCount");
                     cm.MapProperty(c => c.FailedPasswordAnswerAttemptWindowStart).SetElementName("FailedPasswordAnswerAttemptWindowStart");
@@ -365,15 +359,16 @@ namespace MongoMembership.Mongo
         private void CreateIndex()
         {
             this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Email));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.EmailLowercase));
             this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Username));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
             this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles));
             this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles), Util.GetElementNameFor<User>(_ => _.Username));
             this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
             this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate), Util.GetElementNameFor<User>(_ => _.Username));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.Username));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Username), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
+            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.UsernameLowercase), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
             this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
 
             this.RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName));
