@@ -9,13 +9,12 @@ namespace MongoMembership.Tests
     {
         private Establish context = () =>
         {
-            connectionStringFromConfig = ConfigurationManager.AppSettings.Get("LOCALHOST_test");
             provider = CreateProvider();
         };
 
         private Because of = () =>
         {
-            provider.Initialize("null", CreateConfig());
+            connectionStringFromConfig = ConfigurationManager.AppSettings.Get("LOCALHOST_test");
         };
 
         private It should_return_connection_string_from_config_file = () =>

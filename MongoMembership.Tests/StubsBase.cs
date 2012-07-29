@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+using System.Configuration;
+using System.Web.Security;
 using MongoMembership.Mongo;
 using MongoMembership.Providers;
 
@@ -40,19 +41,13 @@ namespace MongoMembership.Tests
 
         public static IMongoGateway CreateMongoGateway()
         {
-            return new MongoGateway("mongodb://localhost/TestMongoGateway");
+            var connectionString = ConfigurationManager.AppSettings["LOCALHOST_test"];
+            return new MongoGateway(connectionString);
         }
 
         public static MongoMembershipProvider CreateProvider()
         {
-            return new MongoMembershipProvider();
-        }
-
-        public static NameValueCollection CreateConfig()
-        {
-            var config = new NameValueCollection();
-            config.Add("connectionStringKeys", "LOCALHOST_test ,MONGOLAB_URI, ;LOCALHOST");
-            return config;
+            return (MongoMembershipProvider)Membership.Provider;
         }
     }
 }
