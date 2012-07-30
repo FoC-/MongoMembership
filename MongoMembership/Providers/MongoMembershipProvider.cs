@@ -202,7 +202,7 @@ namespace MongoMembership.Providers
                 Id = providerUserKey.ToString(),
                 ApplicationName = this.ApplicationName,
                 CreateDate = createDate,
-                EmailLowercase = email.ToLowerInvariant(),
+                EmailLowercase = email == null ? null : email.ToLowerInvariant(),
                 Email = email,
                 FailedPasswordAnswerAttemptCount = 0,
                 FailedPasswordAnswerAttemptWindowStart = createDate,
@@ -219,7 +219,7 @@ namespace MongoMembership.Providers
                 PasswordAnswer = EncodePassword(passwordAnswer, this.PasswordFormat, passwordSalt),
                 PasswordQuestion = passwordQuestion,
                 PasswordSalt = passwordSalt,
-                UsernameLowercase = username.ToLowerInvariant(),
+                UsernameLowercase = username == null ? null : username.ToLowerInvariant(),
                 Username = username
             };
 
