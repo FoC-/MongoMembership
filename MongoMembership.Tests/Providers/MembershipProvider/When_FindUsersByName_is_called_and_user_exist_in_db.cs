@@ -5,6 +5,7 @@ using MongoMembership.Providers;
 
 namespace MongoMembership.Tests.Providers.MembershipProvider
 {
+    [Subject(typeof(MongoMembershipProvider))]
     class When_FindUsersByName_is_called_and_user_exist_in_db : StubsBase
     {
         private Establish context = () =>
@@ -29,13 +30,7 @@ namespace MongoMembership.Tests.Providers.MembershipProvider
 
         private Cleanup staff = () =>
         {
-            int total;
-            MembershipUserCollection allUsers = provider.GetAllUsers(1, 100, out total);
-
-            foreach (MembershipUser user in allUsers)
-            {
-                provider.DeleteUser(user.UserName, true);
-            }
+            provider.DeleteUser(userName, true);
         };
 
         private static MembershipUserCollection users;

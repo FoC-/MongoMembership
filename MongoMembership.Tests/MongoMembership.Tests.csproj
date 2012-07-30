@@ -51,6 +51,7 @@
     <Compile Include="Mongo\CreateUser_when_called.cs" />
     <Compile Include="Mongo\GetById_when_called.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\MembershipProvider\When_CreateUser_is_caled_and_email_is_null.cs" />
     <Compile Include="StubsBase.cs" />
     <Compile Include="Providers\MembershipProvider\When_FindUsersByName_is_called_and_user_exist_in_db.cs" />
     <Compile Include="When_initilized.cs" />
