@@ -3,12 +3,16 @@ MongoMembership
 
 Contain ASP.NET providers for working with Membership, Role, Profile via MongoDB.
 
-## Nuget
+* [Nuget](#nuget)
+* [Configuration](#configuration)
+* [License](#license)
+
+### Nuget
 https://nuget.org/packages/MongoMembership
 
-## Configuration
+### Configuration
 MongoMembership should been added and configured in your Web.config file
-          
+```xml          
     <configuration>
 	<appSettings>
 	    <add key="MONGOLAB_URI" value="mongodb://localhost/MongoLab"/>
@@ -54,10 +58,14 @@ MongoMembership should been added and configured in your Web.config file
             </roleManager>
         </system.web>
     </configuration>
+```
 
 Please notice
 -------------
 Each provider have new attribute _connectionStringKeys_ which could contain coma separated keys(links) to the keys in _appSettings_ section. Order of keys is important. Each key in _appSettings_ should be connection string to MongoDB or should absent in config. If no connection string is configured then default: "mongodb://localhost/MongoMembership" will be used.
+
+### License
+MongoMembership is free software distributed under the terms of MIT License (see LICENSE.txt) these terms don’t apply to other 3rd party tools, utilities or code which may be used to develop this application.
 
 # P.S.
 Do not forget to give your feedback about this project.
