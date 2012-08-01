@@ -14,6 +14,7 @@ namespace MongoMembership.Tests
             return new User
             {
                 ApplicationName = applicationName,
+                Username = "UseRnAmE",
                 Id = "user-Id",
                 Comment = "comment",
                 CreateDate = new DateTime(1920, 10, 10).ToUniversalTime(),
