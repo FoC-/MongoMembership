@@ -50,5 +50,14 @@ namespace MongoMembership.Tests
         {
             return (MongoMembershipProvider)Membership.Provider;
         }
+
+        internal static Role CreateRole()
+        {
+            return new Role
+            {
+                ApplicationName = "test/app",
+                RoleName = "AdMiN"
+            };
+        }
     }
 }
