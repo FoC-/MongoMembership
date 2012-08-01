@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration.Provider;
 using System.Linq;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -15,15 +14,15 @@ namespace MongoMembership.Mongo
 
         private MongoDatabase DataBase
         {
-            get { return MongoDatabase.Create(this.MongoConnectionString); }
+            get { return MongoDatabase.Create(MongoConnectionString); }
         }
         private MongoCollection<User> UsersCollection
         {
-            get { return this.DataBase.GetCollection<User>(typeof(User).Name); }
+            get { return DataBase.GetCollection<User>(typeof(User).Name); }
         }
         private MongoCollection<Role> RolesCollection
         {
-            get { return this.DataBase.GetCollection<Role>(typeof(Role).Name); }
+            get { return DataBase.GetCollection<Role>(typeof(Role).Name); }
         }
 
         static MongoGateway()
@@ -33,18 +32,18 @@ namespace MongoMembership.Mongo
 
         public MongoGateway(string mongoConnectionString)
         {
-            this.MongoConnectionString = mongoConnectionString;
+            MongoConnectionString = mongoConnectionString;
             CreateIndex();
         }
 
         public void DropUsers()
         {
-            this.UsersCollection.Drop();
+            UsersCollection.Drop();
         }
 
         public void DropRoles()
         {
-            this.RolesCollection.Drop();
+            RolesCollection.Drop();
         }
 
         #region User
@@ -55,7 +54,7 @@ namespace MongoMembership.Mongo
 
         public void UpdateUser(User user)
         {
-            this.UsersCollection.Save(user);
+            UsersCollection.Save(user);
         }
 
         public void RemoveUser(User user)
@@ -222,7 +221,7 @@ namespace MongoMembership.Mongo
 
         public int GetUserForPeriodOfTime(string applicationName, TimeSpan timeSpan)
         {
-            return this.UsersCollection
+            return UsersCollection
                     .AsQueryable()
                     .Count(user
                         => user.ApplicationName == applicationName
@@ -247,12 +246,12 @@ namespace MongoMembership.Mongo
                 }
             };
 
-            this.RolesCollection.Remove(query);
+            RolesCollection.Remove(query);
         }
 
         public string[] GetAllRoles(string applicationName)
         {
-            return this.RolesCollection
+            return RolesCollection
                     .AsQueryable()
                     .Where(role => role.ApplicationName == applicationName)
                     .Select(role => role.RoleName)
@@ -358,21 +357,20 @@ namespace MongoMembership.Mongo
 
         private void CreateIndex()
         {
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.EmailLowercase));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Username));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles), Util.GetElementNameFor<User>(_ => _.Username));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.UsernameLowercase), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
-            this.UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.EmailLowercase));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.UsernameLowercase), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
+            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
 
-            this.RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName));
-            this.RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName), Util.GetElementNameFor<Role>(_ => _.RoleName));
+            RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName));
+            RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName), Util.GetElementNameFor<Role>(_ => _.RoleName));
         }
         #endregion
     }
