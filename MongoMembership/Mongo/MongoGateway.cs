@@ -65,12 +65,15 @@ namespace MongoMembership.Mongo
 
         public User GetById(string id)
         {
-            return this.UsersCollection.FindOneById(id);
+            if (id.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
+                return null;
+
+            return UsersCollection.FindOneById(id);
         }
 
         public User GetByUserName(string applicationName, string username)
         {
-            if (username.IsNullOrWhiteSpace())
+            if (username.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
                 return null;
 
             return UsersCollection
@@ -83,24 +86,30 @@ namespace MongoMembership.Mongo
 
         public User GetByEmail(string applicationName, string email)
         {
-            if (UsersCollection.Count() == 0)
+            if (email.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
                 return null;
 
             return UsersCollection
                     .AsQueryable()
                     .SingleOrDefault(user
                         => user.ApplicationName == applicationName
-                        && user.EmailLowercase == email.ToLower()
+                        && user.EmailLowercase == email.ToLowerInvariant()
                         && user.IsDeleted == false);
         }
 
         public IEnumerable<User> GetAllByEmail(string applicationName, string email, int pageIndex, int pageSize, out int totalRecords)
         {
+            if (email.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
+            {
+                totalRecords = 0;
+                return Enumerable.Empty<User>();
+            }
+
             var users = UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
-                            && user.EmailLowercase.Contains(email.ToLower())
+                            && user.EmailLowercase.Contains(email.ToLowerInvariant())
                             && user.IsDeleted == false);
 
             totalRecords = users.Count();
@@ -109,6 +118,12 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetAllByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
         {
+            if (username.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
+            {
+                totalRecords = 0;
+                return Enumerable.Empty<User>();
+            }
+
             var users = UsersCollection
                         .AsQueryable()
                         .Where(user
@@ -122,6 +137,12 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetAllAnonymByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
         {
+            if (username.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
+            {
+                totalRecords = 0;
+                return Enumerable.Empty<User>();
+            }
+
             var users = UsersCollection
                 .AsQueryable()
                 .Where(user
@@ -136,8 +157,12 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetAll(string applicationName, int pageIndex, int pageSize, out int totalRecords)
         {
-            totalRecords = (int)this.UsersCollection.Count();
-            return this.UsersCollection
+            totalRecords = (int)UsersCollection.Count();
+
+            if (totalRecords == 0)
+                return Enumerable.Empty<User>();
+
+            return UsersCollection
                     .AsQueryable()
                     .Where(user
                         => user.ApplicationName == applicationName
@@ -148,7 +173,13 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetAllAnonym(string applicationName, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = this.UsersCollection
+            if (UsersCollection.Count() == 0)
+            {
+                totalRecords = 0;
+                return Enumerable.Empty<User>();
+            }
+
+            var users = UsersCollection
                 .AsQueryable()
                 .Where(user
                     => user.ApplicationName == applicationName
@@ -161,7 +192,13 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetAllInactiveSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = this.UsersCollection
+            if (UsersCollection.Count() == 0)
+            {
+                totalRecords = 0;
+                return Enumerable.Empty<User>();
+            }
+
+            var users = UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
@@ -175,7 +212,13 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetAllInactiveAnonymSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = this.UsersCollection
+            if (UsersCollection.Count() == 0)
+            {
+                totalRecords = 0;
+                return Enumerable.Empty<User>();
+            }
+
+            var users = UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
@@ -190,6 +233,12 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetInactiveSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
         {
+            if (UsersCollection.Count() == 0)
+            {
+                totalRecords = 0;
+                return Enumerable.Empty<User>();
+            }
+
             var users = UsersCollection
                         .AsQueryable()
                         .Where(user
@@ -205,7 +254,13 @@ namespace MongoMembership.Mongo
 
         public IEnumerable<User> GetInactiveAnonymSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            var users = this.UsersCollection
+            if (UsersCollection.Count() == 0)
+            {
+                totalRecords = 0;
+                return Enumerable.Empty<User>();
+            }
+
+            var users = UsersCollection
                         .AsQueryable()
                         .Where(user
                             => user.ApplicationName == applicationName
@@ -242,7 +297,7 @@ namespace MongoMembership.Mongo
                 new Dictionary<string, object>
                 {
                     {Util.GetElementNameFor<Role>(_ => _.ApplicationName), applicationName},
-                    {Util.GetElementNameFor<Role>(_ => _.RoleName), roleName}
+                    {Util.GetElementNameFor<Role>(_ => _.RoleName), roleName.ToLowerInvariant()}
                 }
             };
 
@@ -263,44 +318,51 @@ namespace MongoMembership.Mongo
             if (username.IsNullOrWhiteSpace())
                 return null;
 
-            var roles = this.UsersCollection
-                        .AsQueryable()
-                        .Single(user
-                            => user.ApplicationName == applicationName
-                            && user.Username == username)
-                        .Roles;
+            User user = GetByUserName(applicationName, username);
 
-            return roles == null ? null : roles.ToArray();
+            if (user == null || user.Roles == null)
+                return null;
+
+            return user.Roles.ToArray();
         }
 
         public string[] GetUsersInRole(string applicationName, string roleName)
         {
-            return this.UsersCollection
+            if (roleName.IsNullOrWhiteSpace())
+                return null;
+
+            return UsersCollection
                     .AsQueryable()
                     .Where(user
                         => user.ApplicationName == applicationName
-                        && user.Roles.Contains(roleName))
+                        && user.Roles.Contains(roleName.ToLowerInvariant()))
                     .Select(user => user.Username)
                     .ToArray();
         }
 
         public bool IsUserInRole(string applicationName, string username, string roleName)
         {
+            if (username.IsNullOrWhiteSpace() || roleName.IsNullOrWhiteSpace())
+                return false;
+
             return UsersCollection
                     .AsQueryable()
                     .Any(user
                         => user.ApplicationName == applicationName
-                        && user.Username == username
-                        && user.Roles.Contains(roleName));
+                        && user.UsernameLowercase == username.ToLowerInvariant()
+                        && user.Roles.Contains(roleName.ToLowerInvariant()));
         }
 
         public bool IsRoleExists(string applicationName, string roleName)
         {
-            return this.RolesCollection
+            if (roleName.IsNullOrWhiteSpace())
+                return false;
+
+            return RolesCollection
                     .AsQueryable()
                     .Any(role
                         => role.ApplicationName == applicationName
-                        && role.RoleName == roleName);
+                        && role.RoleName == roleName.ToLowerInvariant());
         }
         #endregion
 
