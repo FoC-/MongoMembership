@@ -42,7 +42,7 @@ namespace MongoMembership.Providers
                 var username1 = username; //Closure solving
                 foreach (var roleName in roleNames.Where(roleName => !IsUserInRole(username1, roleName)))
                 {
-                    user.Roles.Add(roleName);
+                    user.Roles.Add(roleName.ToLowerInvariant());
                     this.mongoGateway.UpdateUser(user);
                 }
             }
@@ -56,7 +56,8 @@ namespace MongoMembership.Providers
             var role = new Role
             {
                 ApplicationName = this.ApplicationName,
-                RoleName = roleName
+                RoleName = roleName,
+                RoleNameLowercased = roleName.ToLowerInvariant()
             };
 
             this.mongoGateway.CreateRole(role);
@@ -114,7 +115,7 @@ namespace MongoMembership.Providers
                     if (!IsUserInRole(username, roleName)) continue;
 
                     var user = this.mongoGateway.GetByUserName(this.ApplicationName, username);
-                    user.Roles.Remove(roleName);
+                    user.Roles.Remove(roleName.ToLowerInvariant());
                     this.mongoGateway.UpdateUser(user);
                 }
             }

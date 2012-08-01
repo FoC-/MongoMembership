@@ -49,7 +49,10 @@ namespace MongoMembership.Mongo
         #region User
         public void CreateUser(User user)
         {
-            this.UsersCollection.Insert(user);
+            if (user.Username != null) user.UsernameLowercase = user.Username.ToLowerInvariant();
+            if (user.Email != null) user.EmailLowercase = user.Email.ToLowerInvariant();
+
+            UsersCollection.Insert(user);
         }
 
         public void UpdateUser(User user)
@@ -287,7 +290,9 @@ namespace MongoMembership.Mongo
         #region Role
         public void CreateRole(Role role)
         {
-            this.RolesCollection.Insert(role);
+            if (role.RoleName != null) role.RoleNameLowercased = role.RoleName.ToLowerInvariant();
+
+            RolesCollection.Insert(role);
         }
 
         public void RemoveRole(string applicationName, string roleName)
@@ -297,7 +302,7 @@ namespace MongoMembership.Mongo
                 new Dictionary<string, object>
                 {
                     {Util.GetElementNameFor<Role>(_ => _.ApplicationName), applicationName},
-                    {Util.GetElementNameFor<Role>(_ => _.RoleName), roleName.ToLowerInvariant()}
+                    {Util.GetElementNameFor<Role>(_ => _.RoleNameLowercased), roleName.ToLowerInvariant()}
                 }
             };
 
@@ -362,7 +367,7 @@ namespace MongoMembership.Mongo
                     .AsQueryable()
                     .Any(role
                         => role.ApplicationName == applicationName
-                        && role.RoleName == roleName.ToLowerInvariant());
+                        && role.RoleNameLowercased == roleName.ToLowerInvariant());
         }
         #endregion
 
@@ -432,7 +437,7 @@ namespace MongoMembership.Mongo
             UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
 
             RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName));
-            RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName), Util.GetElementNameFor<Role>(_ => _.RoleName));
+            RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName), Util.GetElementNameFor<Role>(_ => _.RoleNameLowercased));
         }
         #endregion
     }
