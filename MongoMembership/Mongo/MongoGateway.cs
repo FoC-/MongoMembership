@@ -340,7 +340,7 @@ namespace MongoMembership.Mongo
                     .AsQueryable()
                     .Where(user
                         => user.ApplicationName == applicationName
-                        && user.Roles.Contains(roleName.ToLowerInvariant()))
+                        && (user.Roles.Contains(roleName.ToLowerInvariant()) || user.Roles.Contains(roleName)))
                     .Select(user => user.Username)
                     .ToArray();
         }
@@ -355,7 +355,7 @@ namespace MongoMembership.Mongo
                     .Any(user
                         => user.ApplicationName == applicationName
                         && user.UsernameLowercase == username.ToLowerInvariant()
-                        && user.Roles.Contains(roleName.ToLowerInvariant()));
+                        && (user.Roles.Contains(roleName.ToLowerInvariant())) || user.Roles.Contains(roleName));
         }
 
         public bool IsRoleExists(string applicationName, string roleName)
@@ -418,6 +418,7 @@ namespace MongoMembership.Mongo
                     cm.SetIsRootClass(true);
                     cm.MapProperty(c => c.ApplicationName).SetElementName("ApplicationName");
                     cm.MapProperty(c => c.RoleName).SetElementName("RoleName");
+                    cm.MapProperty(c => c.RoleNameLowercased).SetElementName("RoleNameLowercased");
                 });
             }
         }
