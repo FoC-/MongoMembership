@@ -51,6 +51,11 @@ namespace MongoMembership.Tests
             return (MongoMembershipProvider)Membership.Provider;
         }
 
+        public static MongoRoleProvider CreateRoleProvider()
+        {
+            return (MongoRoleProvider)Roles.Provider;
+        }
+
         internal static Role CreateRole()
         {
             return new Role
