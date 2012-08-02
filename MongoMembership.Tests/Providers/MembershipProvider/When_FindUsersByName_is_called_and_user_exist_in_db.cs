@@ -10,7 +10,7 @@ namespace MongoMembership.Tests.Providers.MembershipProvider
     {
         private Establish context = () =>
         {
-            provider = CreateProvider();
+            provider = CreateMembershipProvider();
             userName = "UserName";
 
             MembershipCreateStatus status;

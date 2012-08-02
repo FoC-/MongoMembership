@@ -46,7 +46,7 @@ namespace MongoMembership.Tests
             return new MongoGateway(connectionString);
         }
 
-        public static MongoMembershipProvider CreateProvider()
+        public static MongoMembershipProvider CreateMembershipProvider()
         {
             return (MongoMembershipProvider)Membership.Provider;
         }

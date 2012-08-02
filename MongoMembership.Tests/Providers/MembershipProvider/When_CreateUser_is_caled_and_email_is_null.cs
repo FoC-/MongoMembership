@@ -10,7 +10,7 @@ namespace MongoMembership.Tests.Providers.MembershipProvider
         Establish context = () =>
         {
             username = "name";
-            provider = CreateProvider();
+            provider = CreateMembershipProvider();
         };
 
         Because of = () =>
