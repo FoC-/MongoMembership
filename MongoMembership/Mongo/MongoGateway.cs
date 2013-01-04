@@ -355,7 +355,7 @@ namespace MongoMembership.Mongo
                     .Any(user
                         => user.ApplicationName == applicationName
                         && user.UsernameLowercase == username.ToLowerInvariant()
-                        && (user.Roles.Contains(roleName.ToLowerInvariant())) || user.Roles.Contains(roleName));
+                        && (user.Roles.Contains(roleName.ToLowerInvariant()) || user.Roles.Contains(roleName)));
         }
 
         public bool IsRoleExists(string applicationName, string roleName)
