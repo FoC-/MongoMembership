@@ -1,4 +1,5 @@
 using System.Web.Security;
+using Machine.Specifications;
 using MongoMembership.Providers;
 
 namespace MongoMembership.Tests.Providers
@@ -13,6 +14,13 @@ namespace MongoMembership.Tests.Providers
         protected static MongoRoleProvider CreateRoleProvider()
         {
             return (MongoRoleProvider)Roles.Provider;
+        }
+
+        protected static void AddUser(MongoMembershipProvider membershipProvider, string username)
+        {
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser(username, "password123", username + "@em.ail", null, null, true, "Id-" + username, out status);
+            status.ShouldEqual(MembershipCreateStatus.Success);
         }
     }
 }

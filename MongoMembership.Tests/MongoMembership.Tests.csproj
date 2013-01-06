@@ -54,6 +54,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ProvidersStubs.cs" />
     <Compile Include="Providers\MembershipProvider\When_CreateUser_is_caled_and_email_is_null.cs" />
+    <Compile Include="Providers\RoleProvider\When_AddUsersToRoles_is_called.cs" />
+    <Compile Include="Providers\RoleProvider\When_DeleteRole_is_called_and_role_exist.cs" />
+    <Compile Include="Providers\RoleProvider\When_DeleteRole_is_called_and_role_not_exist.cs" />
+    <Compile Include="Providers\RoleProvider\When_GetAllRoles_is_called_and_one_role_created.cs" />
+    <Compile Include="Providers\RoleProvider\When_GetAllRoles_is_called_and_roles__Admin__and__AdmiN__created.cs" />
     <Compile Include="Providers\RoleProvider\When_GetUsersInRole_is_called_and_two_users_added_to_same_role.cs" />
     <Compile Include="Providers\RoleProvider\When_CreateRole_is_called.cs" />
     <Compile Include="Providers\RoleProvider\When_IsUserInRole_is_called_and_role_to_compare_different_cases.cs" />
