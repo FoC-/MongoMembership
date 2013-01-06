@@ -1,12 +1,11 @@
 using System.Web.Security;
 using Machine.Specifications;
-using MongoMembership.Mongo;
 using MongoMembership.Providers;
 
 namespace MongoMembership.Tests.Providers.RoleProvider
 {
     [Subject(typeof(MongoRoleProvider))]
-    internal class When_GetUsersInRole_is_called_and_two_users_added_to_same_role : StubsBase
+    internal class When_GetUsersInRole_is_called_and_two_users_added_to_same_role : ProvidersStubs
     {
         Establish conext = () =>
         {
@@ -31,14 +30,6 @@ namespace MongoMembership.Tests.Providers.RoleProvider
 
         It should_return_both_users = () =>
             result.ShouldContain(username1, username2);
-
-        Cleanup staff = () =>
-        {
-            #warning Need to extract this staff
-            IMongoGateway mongo = CreateMongoGateway();
-            mongo.DropRoles();
-            mongo.DropUsers();
-        };
 
         private static MongoRoleProvider roleProvider;
         private static string roleName;

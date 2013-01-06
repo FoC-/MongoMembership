@@ -5,9 +5,9 @@ using MongoMembership.Providers;
 namespace MongoMembership.Tests.Providers.RoleProvider
 {
     [Subject(typeof(MongoRoleProvider))]
-    internal class When_IsUserInRole_is_called_and_role_to_compare_different_cases : StubsBase
+    internal class When_IsUserInRole_is_called_and_role_to_compare_different_cases : ProvidersStubs
     {
-        private Establish conext = () =>
+        Establish conext = () =>
         {
             roleName = "AdmiN";
             username = "UserName";
@@ -20,17 +20,11 @@ namespace MongoMembership.Tests.Providers.RoleProvider
             provider.AddUsersToRoles(new[] { username }, new[] { roleName });
         };
 
-        private Because of = () =>
+        Because of = () =>
             result = provider.IsUserInRole(username, roleName.ToUpperInvariant());
 
-        private It should_return_true = () =>
+        It should_return_true = () =>
             result.ShouldBeTrue();
-
-        private Cleanup staff = () =>
-        {
-            membershipProvider.DeleteUser(username, true);
-            provider.DeleteRole(roleName, false);
-        };
 
         private static bool result;
         private static MongoRoleProvider provider;

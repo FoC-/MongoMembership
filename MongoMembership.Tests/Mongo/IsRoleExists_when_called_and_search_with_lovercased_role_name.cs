@@ -20,18 +20,9 @@ namespace MongoMembership.Tests.Mongo
         };
 
         It should_be_found = () =>
-        {
             isRoleExists.ShouldEqual(true);
-        };
-
-        Cleanup staff = () =>
-        {
-            mongo.DropRoles();
-            mongo.DropUsers();
-        };
 
         private static bool isRoleExists;
-        private static string roleName;
         private static IMongoGateway mongo;
         private static Role role;
     }

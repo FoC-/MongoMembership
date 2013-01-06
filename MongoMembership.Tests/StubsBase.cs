@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Web.Security;
+using Machine.Specifications;
 using MongoMembership.Mongo;
-using MongoMembership.Providers;
 
 namespace MongoMembership.Tests
 {
     internal class StubsBase
     {
-        public static User CreateUser(string applicationName)
+        protected static User CreateUser(string applicationName)
         {
             return new User
             {
@@ -40,23 +39,13 @@ namespace MongoMembership.Tests
             };
         }
 
-        public static IMongoGateway CreateMongoGateway()
+        protected static IMongoGateway CreateMongoGateway()
         {
             var connectionString = ConfigurationManager.AppSettings["LOCALHOST_test"];
             return new MongoGateway(connectionString);
         }
 
-        public static MongoMembershipProvider CreateMembershipProvider()
-        {
-            return (MongoMembershipProvider)Membership.Provider;
-        }
-
-        public static MongoRoleProvider CreateRoleProvider()
-        {
-            return (MongoRoleProvider)Roles.Provider;
-        }
-
-        internal static Role CreateRole()
+        protected static Role CreateRole()
         {
             return new Role
             {
@@ -64,5 +53,12 @@ namespace MongoMembership.Tests
                 RoleName = "AdMiN"
             };
         }
+
+        Cleanup staff = () =>
+        {
+            IMongoGateway mongo = CreateMongoGateway();
+            mongo.DropRoles();
+            mongo.DropUsers();
+        };
     }
 }

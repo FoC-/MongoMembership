@@ -5,7 +5,7 @@ using MongoMembership.Providers;
 namespace MongoMembership.Tests.Providers.MembershipProvider
 {
     [Subject(typeof(MongoMembershipProvider))]
-    class When_CreateUser_is_caled_and_email_is_null : StubsBase
+    internal class When_CreateUser_is_caled_and_email_is_null : ProvidersStubs
     {
         Establish context = () =>
         {
@@ -20,19 +20,10 @@ namespace MongoMembership.Tests.Providers.MembershipProvider
         };
 
         It should_return_user = () =>
-        {
             user.ShouldNotBeNull();
-        };
 
         It should_return_user_with_same_name = () =>
-        {
             user.UserName.ShouldEqual(username);
-        };
-
-        Cleanup staff = () =>
-        {
-            provider.DeleteUser(username, true);
-        };
 
         private static MembershipUser user;
         private static MongoMembershipProvider provider;

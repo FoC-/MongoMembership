@@ -2,25 +2,23 @@ using System.Configuration;
 using Machine.Specifications;
 using MongoMembership.Providers;
 
-namespace MongoMembership.Tests
+namespace MongoMembership.Tests.Providers.MembershipProvider
 {
     [Subject(typeof(MongoMembershipProvider))]
-    internal class When_initilized : StubsBase
+    internal class When_initilized : ProvidersStubs
     {
-        private Establish context = () =>
+        Establish context = () =>
         {
             provider = CreateMembershipProvider();
         };
 
-        private Because of = () =>
+        Because of = () =>
         {
             connectionStringFromConfig = ConfigurationManager.AppSettings.Get("LOCALHOST_test");
         };
 
-        private It should_return_connection_string_from_config_file = () =>
-        {
+        It should_return_connection_string_from_config_file = () =>
             provider.MongoConnectionString.ShouldEqual(connectionStringFromConfig);
-        };
 
         private static MongoMembershipProvider provider;
         private static string connectionStringFromConfig;

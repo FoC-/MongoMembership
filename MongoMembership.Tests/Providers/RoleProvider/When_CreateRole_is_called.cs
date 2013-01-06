@@ -5,22 +5,19 @@ using MongoMembership.Providers;
 namespace MongoMembership.Tests.Providers.RoleProvider
 {
     [Subject(typeof(MongoRoleProvider))]
-    internal class When_CreateRole_is_called:StubsBase
+    internal class When_CreateRole_is_called : ProvidersStubs
     {
-        private Establish conext = () =>
+        Establish conext = () =>
         {
             roleName = "AdmiN";
             provider = CreateRoleProvider();
         };
 
-        private Because of = () =>
+        Because of = () =>
             exception = Catch.Exception(() => provider.CreateRole(roleName));
 
-        private It should_not_throw_exception = () =>
+        It should_not_throw_exception = () =>
             exception.ShouldBeNull();
-
-        private Cleanup staff = () =>
-            provider.DeleteRole(roleName, false);
 
         private static Exception exception;
         private static MongoRoleProvider provider;
