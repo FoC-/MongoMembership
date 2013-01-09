@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>MongoMembership</id>
-    <version>0.0.14</version>
+    <version>0.1.0</version>
     <authors>Nikolay Kush</authors>
     <owners>Nikolay Kush</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -10,7 +10,7 @@
     <copyright>FoC © 2013</copyright>
     <tags>mongo membership providers role profile mvc asp.net</tags>
     <dependencies>
-      <dependency id="mongocsharpdriver" version="1.4.2" />
+      <dependency id="mongocsharpdriver" version="1.7" />
     </dependencies>
   </metadata>
 </package>
