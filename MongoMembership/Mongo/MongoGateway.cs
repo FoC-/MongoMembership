@@ -10,19 +10,14 @@ namespace MongoMembership.Mongo
 {
     internal class MongoGateway : IMongoGateway
     {
-        public string MongoConnectionString { get; private set; }
-
-        private MongoDatabase DataBase
-        {
-            get { return MongoDatabase.Create(MongoConnectionString); }
-        }
+        private readonly MongoDatabase dataBase;
         private MongoCollection<User> UsersCollection
         {
-            get { return DataBase.GetCollection<User>(typeof(User).Name); }
+            get { return dataBase.GetCollection<User>(typeof(User).Name); }
         }
         private MongoCollection<Role> RolesCollection
         {
-            get { return DataBase.GetCollection<Role>(typeof(Role).Name); }
+            get { return dataBase.GetCollection<Role>(typeof(Role).Name); }
         }
 
         static MongoGateway()
@@ -32,7 +27,9 @@ namespace MongoMembership.Mongo
 
         public MongoGateway(string mongoConnectionString)
         {
-            MongoConnectionString = mongoConnectionString;
+            var mongoUrl = new MongoUrl(mongoConnectionString);
+            var server = new MongoClient(mongoUrl).GetServer();
+            dataBase = server.GetDatabase(mongoUrl.DatabaseName);
             CreateIndex();
         }
 

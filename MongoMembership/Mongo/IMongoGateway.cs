@@ -5,7 +5,6 @@ namespace MongoMembership.Mongo
 {
     internal interface IMongoGateway
     {
-        string MongoConnectionString { get; }
         void DropUsers();
         void DropRoles();
         void CreateUser(User user);
