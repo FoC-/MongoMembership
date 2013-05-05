@@ -96,7 +96,7 @@ namespace MongoMembership.Providers
             this.passwordStrengthRegularExpression = Util.GetValue(config["passwordStrengthRegularExpression"], string.Empty);
             this.requiresQuestionAndAnswer = Util.GetValue(config["requiresQuestionAndAnswer"], false);
             this.requiresUniqueEmail = Util.GetValue(config["requiresUniqueEmail"], true);
-            this.MongoConnectionString = ConnectionString(Util.GetValue(config["connectionStringKeys"], string.Empty));
+            this.MongoConnectionString = Util.GetConnectionStringByName(Util.GetValue(config["connectionStringKeys"], string.Empty));
 
             this.mongoGateway = new MongoGateway(this.MongoConnectionString);
 
@@ -407,25 +407,6 @@ namespace MongoMembership.Providers
         #endregion
 
         #region Private Methods
-        private static string ConnectionString(string connectionsettingskeys)
-        {
-            var keys = connectionsettingskeys.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var key in keys)
-            {
-                var name = key.Trim(new[] { ' ' });
-
-                if (name.IsNullOrEmpty())
-                    continue;
-
-                var connectionString = ConfigurationManager.AppSettings.Get(name);
-                if (connectionString == null)
-                    continue;
-
-                return connectionString;
-            }
-            return "mongodb://localhost/MongoMembership";
-        }
-
         private string DecodePassword(string password, MembershipPasswordFormat membershipPasswordFormat)
         {
             switch (membershipPasswordFormat)
