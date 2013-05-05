@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Linq.Expressions;
+using System.Configuration;
 
 namespace MongoMembership.Utils
 {
@@ -50,15 +51,13 @@ namespace MongoMembership.Utils
                 if (name.IsNullOrEmpty())
                     continue;
 
-                var connectionString = ConfigurationManager.ConnectionStrings[name];
-                if (connectionString != null)
-                    return connectionString.ConnectionString;
+                var connectionString1 = ConfigurationManager.ConnectionStrings[name];
+                if (connectionString1 != null)
+                    return connectionString1.ConnectionString;
 
-                connectionString = ConfigurationManager.AppSettings.Get(name);
-                if (connectionString == null)
-                    continue;
-
-                return connectionString;
+                var connectionString2 = ConfigurationManager.AppSettings[name];
+                if (connectionString2 != null)
+                    return connectionString2;
             }
             return "mongodb://localhost/MongoMembership";
         }
