@@ -39,5 +39,24 @@ namespace MongoMembership.Utils
         {
             return GetElementNameFor<TSource, object>(propertyLambda);
         }
+        
+        public static string GetConnectionStringByName(string connectionsettingskeys)
+        {
+            var keys = connectionsettingskeys.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var key in keys)
+            {
+                var name = key.Trim(new[] { ' ' });
+
+                if (name.IsNullOrEmpty())
+                    continue;
+
+                connectionString = ConfigurationManager.AppSettings.Get(name);
+                if (connectionString == null)
+                    continue;
+
+                return connectionString;
+            }
+            return "mongodb://localhost/MongoMembership";
+        }
     }
 }
