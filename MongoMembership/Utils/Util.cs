@@ -50,6 +50,10 @@ namespace MongoMembership.Utils
                 if (name.IsNullOrEmpty())
                     continue;
 
+                var connectionString = ConfigurationManager.ConnectionStrings[name];
+                if (connectionString != null)
+                    return connectionString.ConnectionString;
+
                 connectionString = ConfigurationManager.AppSettings.Get(name);
                 if (connectionString == null)
                     continue;
