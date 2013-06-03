@@ -20,7 +20,7 @@ namespace MongoMembership.Providers
         {
             this.ApplicationName = Util.GetValue(config["applicationName"], HostingEnvironment.ApplicationVirtualPath);
 
-            this.MongoConnectionString = ConnectionString(Util.GetValue(config["connectionStringKeys"], string.Empty));
+            this.MongoConnectionString = Util.GetConnectionStringByName(Util.GetValue(config["connectionStringKeys"], string.Empty));
             this.mongoGateway = new MongoGateway(MongoConnectionString);
 
             base.Initialize(name, config);
@@ -214,25 +214,6 @@ namespace MongoMembership.Providers
         }
 
         #region Private Methods
-        private static string ConnectionString(string connectionsettingskeys)
-        {
-            var keys = connectionsettingskeys.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var key in keys)
-            {
-                var name = key.Trim(new[] { ' ' });
-
-                if (name.IsNullOrEmpty())
-                    continue;
-
-                var connectionString = ConfigurationManager.AppSettings.Get(name);
-                if (connectionString == null)
-                    continue;
-
-                return connectionString;
-            }
-            return "mongodb://localhost/MongoMembership";
-        }
-
         private static ProfileInfo ToProfileInfo(User user)
         {
             return new ProfileInfo(user.Username, user.IsAnonymous, user.LastActivityDate, user.LastUpdatedDate, 0);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Linq.Expressions;
+using System.Configuration;
 
 namespace MongoMembership.Utils
 {
@@ -38,6 +39,27 @@ namespace MongoMembership.Utils
         public static string GetElementNameFor<TSource>(Expression<Func<TSource, object>> propertyLambda)
         {
             return GetElementNameFor<TSource, object>(propertyLambda);
+        }
+        
+        public static string GetConnectionStringByName(string connectionsettingskeys)
+        {
+            var keys = connectionsettingskeys.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var key in keys)
+            {
+                var name = key.Trim(new[] { ' ' });
+
+                if (name.IsNullOrEmpty())
+                    continue;
+
+                var connectionString1 = ConfigurationManager.ConnectionStrings[name];
+                if (connectionString1 != null)
+                    return connectionString1.ConnectionString;
+
+                var connectionString2 = ConfigurationManager.AppSettings[name];
+                if (connectionString2 != null)
+                    return connectionString2;
+            }
+            return "mongodb://localhost/MongoMembership";
         }
     }
 }

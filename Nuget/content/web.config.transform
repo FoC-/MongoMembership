@@ -1,7 +1,7 @@
 <configuration>
-<appSettings>
-    <add key="MongoUri" value="mongodb://localhost/TestMongoMembershipProvider"/>
-</appSettings>
+<connectionStrings>
+    <add name="MongoUri" connectionString="mongodb://localhost/TestMongoMembershipProvider"/>
+</connectionStrings>
     <system.web>
         <membership defaultProvider="MongoMembershipProvider">
             <providers>
