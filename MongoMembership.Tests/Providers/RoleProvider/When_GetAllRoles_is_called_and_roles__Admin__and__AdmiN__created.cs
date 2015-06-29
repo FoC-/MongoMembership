@@ -1,4 +1,5 @@
-﻿using Machine.Specifications;
+﻿using FluentAssertions;
+using Machine.Specifications;
 using MongoMembership.Providers;
 
 namespace MongoMembership.Tests.Providers.RoleProvider
@@ -18,7 +19,7 @@ namespace MongoMembership.Tests.Providers.RoleProvider
             result = provider.GetAllRoles();
 
         It should_only__AdmiN__ = () =>
-            result.ShouldContainOnly(new[] { AdmiN });
+            result.Should().ContainSingle(AdmiN);
 
         private static MongoRoleProvider provider;
         private static string AdmiN;

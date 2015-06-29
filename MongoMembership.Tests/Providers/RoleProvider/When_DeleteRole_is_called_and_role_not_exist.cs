@@ -1,4 +1,5 @@
 ﻿using System;
+using FluentAssertions;
 using Machine.Specifications;
 using MongoMembership.Providers;
 
@@ -16,7 +17,7 @@ namespace MongoMembership.Tests.Providers.RoleProvider
             exception = Catch.Exception(() => provider.DeleteRole("NotAdmiN", false));
 
         It should_not_fail = () =>
-            exception.ShouldBeNull();
+            exception.Should().BeNull();
 
         private static MongoRoleProvider provider;
         private static Exception exception;

@@ -1,4 +1,5 @@
 ﻿using System;
+using FluentAssertions;
 using Machine.Specifications;
 using MongoMembership.Providers;
 
@@ -17,7 +18,7 @@ namespace MongoMembership.Tests.Providers.RoleProvider
             exception = Catch.Exception(() => provider.CreateRole(roleName));
 
         It should_not_throw_exception = () =>
-            exception.ShouldBeNull();
+            exception.Should().BeNull();
 
         private static Exception exception;
         private static MongoRoleProvider provider;

@@ -1,4 +1,5 @@
-﻿using Machine.Specifications;
+﻿using FluentAssertions;
+using Machine.Specifications;
 using MongoMembership.Mongo;
 
 namespace MongoMembership.Tests.Mongo
@@ -20,7 +21,7 @@ namespace MongoMembership.Tests.Mongo
         };
 
         It should_be_found = () =>
-            isRoleExists.ShouldEqual(true);
+            isRoleExists.Should().BeTrue();
 
         private static bool isRoleExists;
         private static IMongoGateway mongo;

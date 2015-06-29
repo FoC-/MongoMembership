@@ -1,4 +1,5 @@
 using System.Web.Security;
+using FluentAssertions;
 using Machine.Specifications;
 using MongoMembership.Providers;
 
@@ -24,7 +25,7 @@ namespace MongoMembership.Tests.Providers.RoleProvider
             result = provider.IsUserInRole(username, roleName.ToUpperInvariant());
 
         It should_return_true = () =>
-            result.ShouldBeTrue();
+            result.Should().BeTrue();
 
         private static bool result;
         private static MongoRoleProvider provider;

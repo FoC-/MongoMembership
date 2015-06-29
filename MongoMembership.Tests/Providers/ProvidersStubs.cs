@@ -1,4 +1,5 @@
 using System.Web.Security;
+using FluentAssertions;
 using Machine.Specifications;
 using MongoMembership.Providers;
 
@@ -20,7 +21,7 @@ namespace MongoMembership.Tests.Providers
         {
             MembershipCreateStatus status;
             membershipProvider.CreateUser(username, "password123", username + "@em.ail", null, null, true, "Id-" + username, out status);
-            status.ShouldEqual(MembershipCreateStatus.Success);
+            status.Should().Be(MembershipCreateStatus.Success);
         }
     }
 }

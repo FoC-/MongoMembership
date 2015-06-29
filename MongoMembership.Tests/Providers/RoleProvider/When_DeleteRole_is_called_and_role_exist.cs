@@ -1,4 +1,5 @@
-﻿using Machine.Specifications;
+﻿using FluentAssertions;
+using Machine.Specifications;
 using MongoMembership.Providers;
 
 namespace MongoMembership.Tests.Providers.RoleProvider
@@ -17,7 +18,7 @@ namespace MongoMembership.Tests.Providers.RoleProvider
             provider.DeleteRole(roleName, false);
 
         It should_delete_role = () =>
-            provider.GetAllRoles().ShouldBeEmpty();
+            provider.GetAllRoles().Should().BeEmpty();
 
         private static MongoRoleProvider provider;
         private static string roleName;

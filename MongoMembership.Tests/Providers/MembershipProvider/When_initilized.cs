@@ -1,4 +1,5 @@
 using System.Configuration;
+using FluentAssertions;
 using Machine.Specifications;
 using MongoMembership.Providers;
 
@@ -18,7 +19,7 @@ namespace MongoMembership.Tests.Providers.MembershipProvider
         };
 
         It should_return_connection_string_from_config_file = () =>
-            provider.MongoConnectionString.ShouldEqual(connectionStringFromConfig);
+            provider.MongoConnectionString.Should().BeEquivalentTo(connectionStringFromConfig);
 
         private static MongoMembershipProvider provider;
         private static string connectionStringFromConfig;

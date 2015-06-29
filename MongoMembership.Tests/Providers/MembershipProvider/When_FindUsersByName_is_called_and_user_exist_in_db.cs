@@ -1,5 +1,6 @@
 using System;
 using System.Web.Security;
+using FluentAssertions;
 using Machine.Specifications;
 using MongoMembership.Providers;
 
@@ -24,7 +25,7 @@ namespace MongoMembership.Tests.Providers.MembershipProvider
         };
 
         It should_return_user = () =>
-            users.ShouldNotBeNull();
+            users.Should().NotBeNull();
 
         private static MembershipUserCollection users;
         private static MongoMembershipProvider provider;

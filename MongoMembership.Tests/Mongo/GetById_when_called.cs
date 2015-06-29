@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Machine.Specifications;
 using MongoMembership.Mongo;
 
@@ -19,7 +20,7 @@ namespace MongoMembership.Tests.Mongo
         };
 
         It should_return_user_with_same_id_as_created = () =>
-            userCreated.Id.ShouldEqual(userReturned.Id);
+            userCreated.Id.Should().BeEquivalentTo(userReturned.Id);
 
         private static User userReturned;
         private static User userCreated;

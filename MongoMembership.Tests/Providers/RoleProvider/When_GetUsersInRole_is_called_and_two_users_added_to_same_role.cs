@@ -1,4 +1,5 @@
 using System.Web.Security;
+using FluentAssertions;
 using Machine.Specifications;
 using MongoMembership.Providers;
 
@@ -29,7 +30,7 @@ namespace MongoMembership.Tests.Providers.RoleProvider
         };
 
         It should_return_both_users = () =>
-            result.ShouldContain(username1, username2);
+            result.Should().Contain(username1, username2);
 
         private static MongoRoleProvider roleProvider;
         private static string roleName;

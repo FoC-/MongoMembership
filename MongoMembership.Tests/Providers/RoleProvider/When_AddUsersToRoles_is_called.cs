@@ -1,4 +1,5 @@
-﻿using Machine.Specifications;
+﻿using FluentAssertions;
+using Machine.Specifications;
 using MongoMembership.Providers;
 
 namespace MongoMembership.Tests.Providers.RoleProvider
@@ -34,22 +35,22 @@ namespace MongoMembership.Tests.Providers.RoleProvider
         };
 
         It should_return_true_for__username1__and__admin__role = () =>
-            provider.IsUserInRole(username1, admin).ShouldBeTrue();
+            provider.IsUserInRole(username1, admin).Should().BeTrue();
 
         It should_return_true_for__username1__and__guest__role = () =>
-            provider.IsUserInRole(username1, guest).ShouldBeTrue();
+            provider.IsUserInRole(username1, guest).Should().BeTrue();
 
         It should_return_false_for__username1__and__banned__role = () =>
-            provider.IsUserInRole(username1, banned).ShouldBeFalse();
+            provider.IsUserInRole(username1, banned).Should().BeFalse();
 
         It should_return_false_for__username3__and__admin__role = () =>
-            provider.IsUserInRole(username3, admin).ShouldBeFalse();
+            provider.IsUserInRole(username3, admin).Should().BeFalse();
 
         It should_return_true_for__username3__and__guest__role = () =>
-            provider.IsUserInRole(username3, guest).ShouldBeTrue();
+            provider.IsUserInRole(username3, guest).Should().BeTrue();
 
         It should_return_true_for__username3__and__banned__role = () =>
-            provider.IsUserInRole(username3, banned).ShouldBeTrue();
+            provider.IsUserInRole(username3, banned).Should().BeTrue();
 
         private static MongoRoleProvider provider;
         private static string admin;
