@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoMembership", "MongoMembership\MongoMembership.csproj", "{7CCBAA95-232D-4F1E-A29F-F2168D18AED3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoMembership.Tests", "MongoMembership.Tests\MongoMembership.Tests.csproj", "{2F8CAAD4-2CE2-44BD-A9FF-2E8A171A0757}"
