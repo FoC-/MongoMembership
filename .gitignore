@@ -10,3 +10,4 @@ TestResults
 *.ncrunchsolution
 *.ncrunchproject
 *crunchsolution*
+packages/
