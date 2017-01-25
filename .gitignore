@@ -11,3 +11,4 @@ TestResults
 *.ncrunchproject
 *crunchsolution*
 packages/
+.vs/
