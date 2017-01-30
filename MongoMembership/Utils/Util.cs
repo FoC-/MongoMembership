@@ -6,7 +6,7 @@ namespace MongoMembership.Utils
 {
     internal static class Util
     {
-        public static T GetValue<T>(string value, T defaultValue)
+        public static T ConvertOrDefault<T>(this string value, T defaultValue)
         {
             return value.IsNullOrEmpty()
                 ? defaultValue

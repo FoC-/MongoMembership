@@ -17,9 +17,9 @@ namespace MongoMembership.Providers
 
         public override void Initialize(string name, NameValueCollection config)
         {
-            ApplicationName = Util.GetValue(config["applicationName"], HostingEnvironment.ApplicationVirtualPath);
+            ApplicationName = config["applicationName"].ConvertOrDefault(HostingEnvironment.ApplicationVirtualPath);
 
-            MongoConnectionString = Util.GetConnectionStringByName(Util.GetValue(config["connectionStringKeys"], string.Empty));
+            MongoConnectionString = Util.GetConnectionStringByName(config["connectionStringKeys"].ConvertOrDefault(string.Empty));
             gateway = new MongoGateway(MongoConnectionString);
 
             base.Initialize(name, config);

@@ -11,7 +11,7 @@ namespace MongoMembership.Utils
 
         public static void RngGenerator(this byte[] allBytes)
         {
-            (new RNGCryptoServiceProvider()).GetBytes(allBytes);
+            new RNGCryptoServiceProvider().GetBytes(allBytes);
         }
     }
 }

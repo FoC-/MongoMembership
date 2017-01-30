@@ -54,19 +54,19 @@ namespace MongoMembership.Providers
         #region Public Methods
         public override void Initialize(string name, NameValueCollection config)
         {
-            ApplicationName = Util.GetValue(config["applicationName"], HostingEnvironment.ApplicationVirtualPath);
+            ApplicationName = config["applicationName"].ConvertOrDefault(HostingEnvironment.ApplicationVirtualPath);
 
-            enablePasswordReset = Util.GetValue(config["enablePasswordReset"], true);
-            enablePasswordRetrieval = Util.GetValue(config["enablePasswordRetrieval"], false);
-            maxInvalidPasswordAttempts = Util.GetValue(config["maxInvalidPasswordAttempts"], 5);
-            minRequiredNonAlphanumericCharacters = Util.GetValue(config["minRequiredNonAlphanumericCharacters"], 1);
-            minRequiredPasswordLength = Util.GetValue(config["minRequiredPasswordLength"], 7);
-            passwordAttemptWindow = Util.GetValue(config["passwordAttemptWindow"], 10);
-            passwordFormat = Util.GetValue(config["passwordFormat"], MembershipPasswordFormat.Hashed);
-            passwordStrengthRegularExpression = Util.GetValue(config["passwordStrengthRegularExpression"], string.Empty);
-            requiresQuestionAndAnswer = Util.GetValue(config["requiresQuestionAndAnswer"], false);
-            requiresUniqueEmail = Util.GetValue(config["requiresUniqueEmail"], true);
-            MongoConnectionString = Util.GetConnectionStringByName(Util.GetValue(config["connectionStringKeys"], string.Empty));
+            enablePasswordReset = config["enablePasswordReset"].ConvertOrDefault(true);
+            enablePasswordRetrieval = config["enablePasswordRetrieval"].ConvertOrDefault(false);
+            maxInvalidPasswordAttempts = config["maxInvalidPasswordAttempts"].ConvertOrDefault(5);
+            minRequiredNonAlphanumericCharacters = config["minRequiredNonAlphanumericCharacters"].ConvertOrDefault(1);
+            minRequiredPasswordLength = config["minRequiredPasswordLength"].ConvertOrDefault(7);
+            passwordAttemptWindow = config["passwordAttemptWindow"].ConvertOrDefault(10);
+            passwordFormat = config["passwordFormat"].ConvertOrDefault(MembershipPasswordFormat.Hashed);
+            passwordStrengthRegularExpression = config["passwordStrengthRegularExpression"].ConvertOrDefault(string.Empty);
+            requiresQuestionAndAnswer = config["requiresQuestionAndAnswer"].ConvertOrDefault(false);
+            requiresUniqueEmail = config["requiresUniqueEmail"].ConvertOrDefault(true);
+            MongoConnectionString = Util.GetConnectionStringByName(config["connectionStringKeys"].ConvertOrDefault(string.Empty));
 
             mongoGateway = new MongoGateway(MongoConnectionString);
 
