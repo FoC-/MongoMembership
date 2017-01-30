@@ -93,8 +93,7 @@ namespace MongoMembership.Providers
             if (validatePasswordEventArgs.Cancel)
                 throw new MembershipPasswordException(validatePasswordEventArgs.FailureInformation.Message);
 
-            user.LastPasswordChangedDate = DateTime.UtcNow;
-            user.Password = EncodePassword(newPassword, PasswordFormat, user.PasswordSalt);
+            user.ChangePassword(Encode(newPassword, user.PasswordSalt));
             mongoGateway.UpdateUser(user);
             return true;
         }
@@ -102,16 +101,12 @@ namespace MongoMembership.Providers
         public override bool ChangePasswordQuestionAndAnswer(string username, string password, string newPasswordQuestion, string newPasswordAnswer)
         {
             if (username.IsNullOrWhiteSpace()) return false;
-
-            var user = mongoGateway.GetByUserName(ApplicationName, username);
-
-            if (!IsPasswordCorrect(user, password))
-                return false;
-
-            user.PasswordQuestion = newPasswordQuestion;
-            user.PasswordAnswer = EncodePassword(newPasswordAnswer, PasswordFormat, user.PasswordSalt);
-            mongoGateway.UpdateUser(user);
-            return true;
+            return UpdateAndReturn(username, user =>
+            {
+                if (!IsPasswordCorrect(user, password)) return false;
+                user.ChangePasswordQuestionAndAnswer(newPasswordQuestion, Encode(newPasswordAnswer, user.PasswordSalt));
+                return true;
+            });
         }
 
         public override MembershipUser CreateUser(string username, string password, string email, string passwordQuestion, string passwordAnswer, bool isApproved, object providerUserKey, out MembershipCreateStatus status)
@@ -172,7 +167,7 @@ namespace MongoMembership.Providers
                 Id = providerUserKey.ToString(),
                 ApplicationName = ApplicationName,
                 CreateDate = createDate,
-                EmailLowercase = email == null ? null : email.ToLowerInvariant(),
+                EmailLowercase = email?.ToLowerInvariant(),
                 Email = email,
                 FailedPasswordAnswerAttemptCount = 0,
                 FailedPasswordAnswerAttemptWindowStart = createDate,
@@ -185,11 +180,11 @@ namespace MongoMembership.Providers
                 LastLockedOutDate = new DateTime(1970, 1, 1),
                 LastLoginDate = createDate,
                 LastPasswordChangedDate = createDate,
-                Password = EncodePassword(password, PasswordFormat, passwordSalt),
-                PasswordAnswer = EncodePassword(passwordAnswer, PasswordFormat, passwordSalt),
+                Password = Encode(password, passwordSalt),
+                PasswordAnswer = Encode(passwordAnswer, passwordSalt),
                 PasswordQuestion = passwordQuestion,
                 PasswordSalt = passwordSalt,
-                UsernameLowercase = username == null ? null : username.ToLowerInvariant(),
+                UsernameLowercase = username?.ToLowerInvariant(),
                 Username = username
             };
 
@@ -201,10 +196,11 @@ namespace MongoMembership.Providers
         public override bool DeleteUser(string username, bool deleteAllRelatedData)
         {
             if (username.IsNullOrWhiteSpace()) return false;
-            var user = mongoGateway.GetByUserName(ApplicationName, username);
-
-            mongoGateway.RemoveUser(user);
-            return true;
+            return UpdateAndReturn(username, user =>
+            {
+                user.Delete();
+                return true;
+            });
         }
 
         public override MembershipUserCollection FindUsersByEmail(string emailToMatch, int pageIndex, int pageSize, out int totalRecords)
@@ -214,7 +210,7 @@ namespace MongoMembership.Providers
 
             foreach (var user in users)
             {
-                membershipUsers.Add(ToMembershipUser(user));
+                membershipUsers.Add(user.ToMembershipUser(Name));
             }
 
             return membershipUsers;
@@ -227,7 +223,7 @@ namespace MongoMembership.Providers
 
             foreach (var user in users)
             {
-                membershipUsers.Add(ToMembershipUser(user));
+                membershipUsers.Add(user.ToMembershipUser(Name));
             }
 
             return membershipUsers;
@@ -240,7 +236,7 @@ namespace MongoMembership.Providers
 
             foreach (var user in users)
             {
-                membershipUsers.Add(ToMembershipUser(user));
+                membershipUsers.Add(user.ToMembershipUser(Name));
             }
 
             return membershipUsers;
@@ -258,27 +254,19 @@ namespace MongoMembership.Providers
                 throw new NotSupportedException("This Membership Provider has not been configured to support password retrieval.");
 
             var user = mongoGateway.GetByUserName(ApplicationName, username);
+            ValidatePasswordAnswer(user, answer);
 
-            if (RequiresQuestionAndAnswer && !VerifyPasswordAnswer(user, answer))
-                throw new MembershipPasswordException("The password-answer supplied is invalid.");
-
-            return DecodePassword(user.Password, PasswordFormat);
+            return DecodePassword(user.Password);
         }
 
         public override MembershipUser GetUser(string username, bool userIsOnline)
         {
-            var user = mongoGateway.GetByUserName(ApplicationName, username);
-
-            if (user == null)
-                return null;
-
-            if (userIsOnline)
+            return UpdateAndReturn(username, user =>
             {
-                user.LastActivityDate = DateTime.UtcNow;
-                mongoGateway.UpdateUser(user);
-            }
-
-            return ToMembershipUser(user);
+                if (user == null) return null;
+                if (userIsOnline) user.UpdateLastActivityDate();
+                return user.ToMembershipUser(Name);
+            });
         }
 
         public override MembershipUser GetUser(object providerUserKey, bool userIsOnline)
@@ -290,17 +278,17 @@ namespace MongoMembership.Providers
 
             if (userIsOnline)
             {
-                user.LastActivityDate = DateTime.UtcNow;
+                user.UpdateLastActivityDate();
                 mongoGateway.UpdateUser(user);
             }
 
-            return ToMembershipUser(user);
+            return user.ToMembershipUser(Name);
         }
 
         public override string GetUserNameByEmail(string email)
         {
             var user = mongoGateway.GetByEmail(ApplicationName, email);
-            return user == null ? null : user.Username;
+            return user?.Username;
         }
 
         public override string ResetPassword(string username, string answer)
@@ -308,78 +296,71 @@ namespace MongoMembership.Providers
             if (!EnablePasswordReset)
                 throw new NotSupportedException("This provider is not configured to allow password resets. To enable password reset, set enablePasswordReset to \"true\" in the configuration file.");
 
-            var user = mongoGateway.GetByUserName(ApplicationName, username);
-
-            if (RequiresQuestionAndAnswer && !VerifyPasswordAnswer(user, answer))
-                throw new MembershipPasswordException("The password-answer supplied is invalid.");
-
-            var password = Membership.GeneratePassword(MinRequiredPasswordLength, MinRequiredNonAlphanumericCharacters);
-            user.LastPasswordChangedDate = DateTime.UtcNow;
-            user.Password = EncodePassword(password, PasswordFormat, user.PasswordSalt);
-            mongoGateway.UpdateUser(user);
-
-            return password;
+            return UpdateAndReturn(username, user =>
+            {
+                ValidatePasswordAnswer(user, answer);
+                var password = Membership.GeneratePassword(MinRequiredPasswordLength, MinRequiredNonAlphanumericCharacters);
+                user.ChangePassword(Encode(password, user.PasswordSalt));
+                return password;
+            });
         }
 
         public override bool UnlockUser(string username)
         {
             if (username.IsNullOrWhiteSpace()) return false;
-
-            var user = mongoGateway.GetByUserName(ApplicationName, username);
-            if (user == null) return false;
-
-            user.FailedPasswordAttemptCount = 0;
-            user.FailedPasswordAttemptWindowStart = new DateTime(1970, 1, 1);
-            user.FailedPasswordAnswerAttemptCount = 0;
-            user.FailedPasswordAnswerAttemptWindowStart = new DateTime(1970, 1, 1);
-            user.IsLockedOut = false;
-            user.LastLockedOutDate = new DateTime(1970, 1, 1);
-            mongoGateway.UpdateUser(user);
-            return true;
+            return UpdateAndReturn(username, user =>
+            {
+                if (user == null) return false;
+                user.Unlock();
+                return true;
+            });
         }
 
         public override void UpdateUser(MembershipUser membershipUser)
         {
-            var user = mongoGateway.GetById(membershipUser.ProviderUserKey.ToString());
+            var user = mongoGateway.GetById(membershipUser.ProviderUserKey?.ToString());
 
             if (user == null)
                 throw new ProviderException("The membershipUser was not found.");
 
-            user.ApplicationName = ApplicationName;
-            user.Comment = membershipUser.Comment;
-            user.Email = membershipUser.Email;
-            user.IsApproved = membershipUser.IsApproved;
-            user.LastActivityDate = membershipUser.LastActivityDate.ToUniversalTime();
-            user.LastLoginDate = membershipUser.LastLoginDate.ToUniversalTime();
+            user.Update(membershipUser);
 
             mongoGateway.UpdateUser(user);
         }
 
         public override bool ValidateUser(string username, string password)
         {
-            var user = mongoGateway.GetByUserName(ApplicationName, username);
-
-            if (user == null || !user.IsApproved || user.IsLockedOut)
-                return false;
-
-            if (IsPasswordCorrect(user, password))
+            return UpdateAndReturn(username, user =>
             {
-                user.LastLoginDate = DateTime.UtcNow;
-                mongoGateway.UpdateUser(user);
-                return true;
-            }
+                if (user == null || !user.IsApproved || user.IsLockedOut)
+                    return false;
 
-            user.FailedPasswordAnswerAttemptCount += 1;
-            user.FailedPasswordAttemptWindowStart = DateTime.UtcNow;
-            mongoGateway.UpdateUser(user);
-            return false;
+                var isPasswordCorrect = IsPasswordCorrect(user, password);
+                if (isPasswordCorrect)
+                {
+                    user.UpdateLastLoginDate();
+                }
+                else
+                {
+                    user.PasswordValidationFailed();
+                }
+                return isPasswordCorrect;
+            });
         }
         #endregion
 
         #region Private Methods
-        private string DecodePassword(string password, MembershipPasswordFormat membershipPasswordFormat)
+        private T UpdateAndReturn<T>(string username, Func<User, T> updater)
         {
-            switch (membershipPasswordFormat)
+            var user = mongoGateway.GetByUserName(ApplicationName, username);
+            var result = updater(user);
+            if (user != null) mongoGateway.UpdateUser(user);
+            return result;
+        }
+
+        private string DecodePassword(string password)
+        {
+            switch (PasswordFormat)
             {
                 case MembershipPasswordFormat.Clear:
                     return password;
@@ -390,18 +371,13 @@ namespace MongoMembership.Providers
                 default:
                     var passwordBytes = Convert.FromBase64String(password);
                     var decryptedBytes = DecryptPassword(passwordBytes);
-                    return decryptedBytes == null ? null : decryptedBytes.ToUnicodeString(16);
+                    return decryptedBytes?.ToUnicodeString(16);
             }
         }
 
-        private string EncodePassword(string password, MembershipPasswordFormat membershipPasswordFormat, string salt)
+        private string Encode(string password, string salt)
         {
-            if (password == null)
-            {
-                return null;
-            }
-
-            if (membershipPasswordFormat == MembershipPasswordFormat.Clear)
+            if (password == null || PasswordFormat == MembershipPasswordFormat.Clear)
             {
                 return password;
             }
@@ -413,7 +389,7 @@ namespace MongoMembership.Providers
             Buffer.BlockCopy(saltBytes, 0, allBytes, 0, saltBytes.Length);
             Buffer.BlockCopy(passwordBytes, 0, allBytes, saltBytes.Length, passwordBytes.Length);
 
-            if (membershipPasswordFormat == MembershipPasswordFormat.Hashed)
+            if (PasswordFormat == MembershipPasswordFormat.Hashed)
             {
                 return allBytes.ComputeHash().ToBase64String();
             }
@@ -421,22 +397,17 @@ namespace MongoMembership.Providers
             return EncryptPassword(allBytes).ToBase64String();
         }
 
-        private MembershipUser ToMembershipUser(User user)
-        {
-            if (user == null)
-                return null;
-
-            return new MembershipUser(Name, user.Username, user.Id, user.Email, user.PasswordQuestion, user.Comment, user.IsApproved, user.IsLockedOut, user.CreateDate, user.LastLoginDate, user.LastActivityDate, user.LastPasswordChangedDate, user.LastLockedOutDate);
-        }
-
         private bool IsPasswordCorrect(User user, string password)
         {
-            return user.Password == EncodePassword(password, PasswordFormat, user.PasswordSalt);
+            return user.Password == Encode(password, user.PasswordSalt);
         }
 
-        private bool VerifyPasswordAnswer(User user, string passwordAnswer)
+        private void ValidatePasswordAnswer(User user, string passwordAnswer)
         {
-            return user.PasswordAnswer == EncodePassword(passwordAnswer, PasswordFormat, user.PasswordSalt);
+            if (!RequiresQuestionAndAnswer) return;
+
+            if (user.PasswordAnswer != Encode(passwordAnswer, user.PasswordSalt))
+                throw new MembershipPasswordException("The password-answer supplied is invalid.");
         }
         #endregion
     }

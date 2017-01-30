@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Web.Security;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace MongoMembership
@@ -51,6 +52,64 @@ namespace MongoMembership
                     Values.Add(value.Key, value.Value);
                 }
             }
+        }
+
+        public void ChangePassword(string password)
+        {
+            LastPasswordChangedDate = DateTime.UtcNow;
+            Password = password;
+        }
+
+        public void ChangePasswordQuestionAndAnswer(string question, string answer)
+        {
+            PasswordQuestion = question;
+            PasswordAnswer = answer;
+        }
+
+        public void Delete()
+        {
+            IsDeleted = true;
+        }
+
+        public void UpdateLastActivityDate()
+        {
+            LastActivityDate = DateTime.UtcNow;
+        }
+
+        public void UpdateLastLoginDate()
+        {
+            LastLoginDate = DateTime.UtcNow;
+        }
+
+        public void PasswordValidationFailed()
+        {
+            FailedPasswordAttemptCount += 1;
+            FailedPasswordAttemptWindowStart = DateTime.UtcNow;
+        }
+
+        public void Unlock()
+        {
+            FailedPasswordAttemptCount = 0;
+            FailedPasswordAttemptWindowStart = new DateTime(1970, 1, 1);
+            FailedPasswordAnswerAttemptCount = 0;
+            FailedPasswordAnswerAttemptWindowStart = new DateTime(1970, 1, 1);
+            IsLockedOut = false;
+            LastLockedOutDate = new DateTime(1970, 1, 1);
+        }
+
+        public void Update(MembershipUser membershipUser)
+        {
+            ApplicationName = ApplicationName;
+            Comment = membershipUser.Comment;
+            Email = membershipUser.Email;
+            IsApproved = membershipUser.IsApproved;
+            LastActivityDate = membershipUser.LastActivityDate.ToUniversalTime();
+            LastLoginDate = membershipUser.LastLoginDate.ToUniversalTime();
+        }
+
+        public MembershipUser ToMembershipUser(string providerName)
+        {
+            return new MembershipUser(providerName, Username, Id, Email, PasswordQuestion, Comment, IsApproved, IsLockedOut, CreateDate, LastLoginDate, LastActivityDate, LastPasswordChangedDate, LastLockedOutDate);
         }
 
         public override string ToString()
