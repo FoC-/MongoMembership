@@ -65,7 +65,6 @@
     <Compile Include="Providers\MongoRoleProvider.cs" />
     <Compile Include="Role.cs" />
     <Compile Include="User.cs" />
-    <Compile Include="Utils\EnsureExtensions.cs" />
     <Compile Include="Utils\SecurityExtensions.cs" />
     <Compile Include="Utils\StringExtensions.cs" />
     <Compile Include="Utils\Util.cs" />
