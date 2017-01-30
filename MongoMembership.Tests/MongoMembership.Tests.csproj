@@ -66,6 +66,9 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Mongo\IsRoleExists_when_called_and_search_with_lovercased_role_name.cs" />
     <Compile Include="Mongo\CreateUser_when_called.cs" />
     <Compile Include="Mongo\GetById_when_called.cs" />

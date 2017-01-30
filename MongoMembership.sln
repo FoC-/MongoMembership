@@ -9,6 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoMembership.Web", "Mong
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoMembership", "MongoMembership\MongoMembership.csproj", "{5FAC9E68-B848-4B2C-B5EF-86349661C5C3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{1E84310A-B8D8-4824-848F-A0C7741843A6}"
+	ProjectSection(SolutionItems) = preProject
+		Shared\Build.targets = Shared\Build.targets
+		Shared\GlobalAssemblyInfo.cs = Shared\GlobalAssemblyInfo.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

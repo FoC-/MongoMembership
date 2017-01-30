@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+
+    <!-- Configuration -->
+    <ShouldExecute>false</ShouldExecute>
+    <ShouldExecute Condition="'$(ConfigurationName)' == 'Release'">true</ShouldExecute>
+
+    <!-- Tools -->
+    <NugetPackages>$(MSBuildThisFileDirectory)..\packages</NugetPackages>
+    <NugetExePath Condition=" '$(NugetExePath)' == '' ">$(NugetPackages)\NuGet.CommandLine.3.5.0\tools\NuGet.exe</NugetExePath>
+
+    <!-- Project files -->
+    <NuspecFile>$(ProjectDir)$(ProjectName).nuspec</NuspecFile>
+
+    <!-- Commands -->
+    <PackCommand>$(NugetExePath) pack "$(NuspecFile)" -outputdirectory $(TargetDir)</PackCommand>
+
+  </PropertyGroup>
+
+  <Target Name="CheckPrerequisites" AfterTargets="PostBuildEvent" Condition="$(ShouldExecute)">
+    <Error Condition="!Exists('$(NuspecFile)')" Text="Unable to locate '$(NuspecFile)'" />
+    <Error Condition="!Exists('$(NugetExePath)')" Text="Unable to locate '$(NugetExePath)'" />
+  </Target>
+
+  <Target Name="PackNuget" AfterTargets="CheckPrerequisites" Condition="$(ShouldExecute)" >
+    <Exec WorkingDirectory="$(ProjectDir)" Command="$(PackCommand)" />
+  </Target>
+
+</Project>
