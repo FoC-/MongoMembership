@@ -5,19 +5,19 @@ namespace MongoMembership.Utils
 {
     internal static class StringExtensions
     {
-        public static string F(this string str, params object[] os)
-        {
-            return String.Format(str, os);
-        }
-
         public static bool IsNullOrWhiteSpace(this string str)
         {
-            return String.IsNullOrWhiteSpace(str);
+            return string.IsNullOrWhiteSpace(str);
         }
 
         public static bool IsNullOrEmpty(this string str)
         {
-            return String.IsNullOrEmpty(str);
+            return string.IsNullOrEmpty(str);
+        }
+
+        public static bool IsNotNullOrEmpty(this string str)
+        {
+            return !string.IsNullOrEmpty(str);
         }
 
         public static byte[] ToByteArray(this string str)

@@ -1,5 +1,8 @@
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace MongoMembership
 {
+    [BsonIgnoreExtraElements]
     internal class Role
     {
         public string ApplicationName { get; set; }

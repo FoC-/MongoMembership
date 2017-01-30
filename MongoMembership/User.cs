@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace MongoMembership
 {
+    [BsonIgnoreExtraElements]
     internal class User
     {
         public string ApplicationName { get; set; }
+        [BsonId]
         public string Id { get; set; }
         public string Username { get; set; }
         public string UsernameLowercase { get; set; }
@@ -30,33 +33,29 @@ namespace MongoMembership
         public DateTime FailedPasswordAttemptWindowStart { get; set; }
         public int FailedPasswordAnswerAttemptCount { get; set; }
         public DateTime FailedPasswordAnswerAttemptWindowStart { get; set; }
-        public List<string> Roles { get; set; }
-        public Dictionary<string, object> Values { get; set; }
-
-        public User()
-        {
-            this.Roles = new List<string>();
-            this.Values = new Dictionary<string, object>();
-        }
+        [BsonIgnoreIfNull]
+        public List<string> Roles { get; set; } = new List<string>();
+        [BsonIgnoreIfNull]
+        public Dictionary<string, object> Values { get; set; } = new Dictionary<string, object>();
 
         public void AddValues(Dictionary<string, object> values)
         {
             foreach (var value in values)
             {
-                if (this.Values.ContainsKey(value.Key))
+                if (Values.ContainsKey(value.Key))
                 {
-                    this.Values[value.Key] = value.Value;
+                    Values[value.Key] = value.Value;
                 }
                 else
                 {
-                    this.Values.Add(value.Key, value.Value);
+                    Values.Add(value.Key, value.Value);
                 }
             }
         }
 
         public override string ToString()
         {
-            return this.Username + " <" + this.Email + ">";
+            return $"{Username} <{Email}>";
         }
     }
 }

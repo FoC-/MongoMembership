@@ -1,60 +1,50 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MongoDB.Bson.Serialization;
+using System.Linq.Expressions;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 using MongoMembership.Utils;
 
 namespace MongoMembership.Mongo
 {
     internal class MongoGateway : IMongoGateway
     {
-        private readonly MongoDatabase dataBase;
-        private MongoCollection<User> UsersCollection
-        {
-            get { return dataBase.GetCollection<User>(typeof(User).Name); }
-        }
-        private MongoCollection<Role> RolesCollection
-        {
-            get { return dataBase.GetCollection<Role>(typeof(Role).Name); }
-        }
-
-        static MongoGateway()
-        {
-            RegisterClassMapping();
-        }
+        private readonly IMongoCollection<User> usersCollection;
+        private readonly IMongoCollection<Role> rolesCollection;
 
         public MongoGateway(string mongoConnectionString)
         {
             var mongoUrl = new MongoUrl(mongoConnectionString);
-            var server = new MongoClient(mongoUrl).GetServer();
-            dataBase = server.GetDatabase(mongoUrl.DatabaseName);
+            var dataBase = new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName);
+            usersCollection = dataBase.GetCollection<User>(nameof(User));
+            rolesCollection = dataBase.GetCollection<Role>(nameof(Role));
+
             CreateIndex();
         }
 
         public void DropUsers()
         {
-            UsersCollection.Drop();
+            usersCollection.DeleteMany(u => true);
         }
 
         public void DropRoles()
         {
-            RolesCollection.Drop();
+            rolesCollection.DeleteMany(r => true);
         }
 
         #region User
+
         public void CreateUser(User user)
         {
-            if (user.Username != null) user.UsernameLowercase = user.Username.ToLowerInvariant();
-            if (user.Email != null) user.EmailLowercase = user.Email.ToLowerInvariant();
+            user.UsernameLowercase = user.Username?.ToLowerInvariant();
+            user.EmailLowercase = user.Email?.ToLowerInvariant();
 
-            UsersCollection.Insert(user);
+            usersCollection.InsertOne(user);
         }
 
         public void UpdateUser(User user)
         {
-            UsersCollection.Save(user);
+            usersCollection.FindOneAndReplace(f => f.Id == user.Id, user);
         }
 
         public void RemoveUser(User user)
@@ -65,254 +55,165 @@ namespace MongoMembership.Mongo
 
         public User GetById(string id)
         {
-            if (id.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
-                return null;
-
-            return UsersCollection.FindOneById(id);
+            return usersCollection.FindSync(f => f.Id == id).SingleOrDefault();
         }
 
         public User GetByUserName(string applicationName, string username)
         {
-            if (username.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
-                return null;
+            username = username?.ToLowerInvariant();
 
-            return UsersCollection
-                    .AsQueryable()
-                    .SingleOrDefault(user
-                        => user.ApplicationName == applicationName
-                        && user.UsernameLowercase == username.ToLowerInvariant()
-                        && user.IsDeleted == false);
+            return usersCollection
+                .FindSync(UserFilter(applicationName, u => u.UsernameLowercase == username))
+                .SingleOrDefault();
         }
 
         public User GetByEmail(string applicationName, string email)
         {
-            if (email.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
-                return null;
+            email = email?.ToLowerInvariant();
 
-            return UsersCollection
-                    .AsQueryable()
-                    .SingleOrDefault(user
-                        => user.ApplicationName == applicationName
-                        && user.EmailLowercase == email.ToLowerInvariant()
-                        && user.IsDeleted == false);
+            return usersCollection
+                .FindSync(UserFilter(applicationName, u => u.EmailLowercase == email))
+                .SingleOrDefault();
         }
 
-        public IEnumerable<User> GetAllByEmail(string applicationName, string email, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllByEmail(string applicationName, string email, int pageIndex, int pageSize,
+            out int totalRecords)
         {
-            if (email.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
-            {
-                totalRecords = 0;
-                return Enumerable.Empty<User>();
-            }
+            email = email?.ToLowerInvariant();
 
-            var users = UsersCollection
-                        .AsQueryable()
-                        .Where(user
-                            => user.ApplicationName == applicationName
-                            && user.EmailLowercase.Contains(email.ToLowerInvariant())
-                            && user.IsDeleted == false);
+            var filter = UserFilter(applicationName, u => u.UsernameLowercase.Contains(email));
+            var result = GetAll(filter, pageIndex, pageSize);
 
-            totalRecords = users.Count();
-            return users.Skip(pageIndex * pageSize).Take(pageSize);
+            totalRecords = result.Item2;
+            return result.Item1;
         }
 
-        public IEnumerable<User> GetAllByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllByUserName(string applicationName, string username, int pageIndex, int pageSize,
+            out int totalRecords)
         {
-            if (username.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
-            {
-                totalRecords = 0;
-                return Enumerable.Empty<User>();
-            }
+            username = username?.ToLowerInvariant();
 
-            var users = UsersCollection
-                        .AsQueryable()
-                        .Where(user
-                            => user.ApplicationName == applicationName
-                            && user.UsernameLowercase.Contains(username.ToLowerInvariant())
-                            && user.IsDeleted == false);
+            var filter = UserFilter(applicationName, u => u.UsernameLowercase.Contains(username));
+            var result = GetAll(filter, pageIndex, pageSize);
 
-            totalRecords = users.Count();
-            return users.Skip(pageIndex * pageSize).Take(pageSize);
+            totalRecords = result.Item2;
+            return result.Item1;
         }
 
-        public IEnumerable<User> GetAllAnonymByUserName(string applicationName, string username, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllAnonymByUserName(string applicationName, string username, int pageIndex,
+            int pageSize, out int totalRecords)
         {
-            if (username.IsNullOrWhiteSpace() || UsersCollection.Count() == 0)
-            {
-                totalRecords = 0;
-                return Enumerable.Empty<User>();
-            }
+            username = username?.ToLowerInvariant();
 
-            var users = UsersCollection
-                .AsQueryable()
-                .Where(user
-                    => user.ApplicationName == applicationName
-                    && user.UsernameLowercase.Contains(username.ToLowerInvariant())
-                    && user.IsAnonymous
-                    && user.IsDeleted == false);
+            var filter = UserFilter(applicationName, u => u.IsAnonymous && u.UsernameLowercase.Contains(username));
+            var result = GetAll(filter, pageIndex, pageSize);
 
-            totalRecords = users.Count();
-            return users.Skip(pageIndex * pageSize).Take(pageSize);
+            totalRecords = result.Item2;
+            return result.Item1;
         }
 
         public IEnumerable<User> GetAll(string applicationName, int pageIndex, int pageSize, out int totalRecords)
         {
-            totalRecords = (int)UsersCollection.Count();
+            var filter = UserFilter(applicationName, _ => true);
+            var result = GetAll(filter, pageIndex, pageSize);
 
-            if (totalRecords == 0)
-                return Enumerable.Empty<User>();
-
-            return UsersCollection
-                    .AsQueryable()
-                    .Where(user
-                        => user.ApplicationName == applicationName
-                        && user.IsDeleted == false)
-                    .Skip(pageIndex * pageSize)
-                    .Take(pageSize);
+            totalRecords = result.Item2;
+            return result.Item1;
         }
 
         public IEnumerable<User> GetAllAnonym(string applicationName, int pageIndex, int pageSize, out int totalRecords)
         {
-            if (UsersCollection.Count() == 0)
-            {
-                totalRecords = 0;
-                return Enumerable.Empty<User>();
-            }
+            var filter = UserFilter(applicationName, u => u.IsAnonymous);
+            var result = GetAll(filter, pageIndex, pageSize);
 
-            var users = UsersCollection
-                .AsQueryable()
-                .Where(user
-                    => user.ApplicationName == applicationName
-                    && user.IsAnonymous
-                    && user.IsDeleted == false);
-
-            totalRecords = users.Count();
-            return users.Skip(pageIndex * pageSize).Take(pageSize);
+            totalRecords = result.Item2;
+            return result.Item1;
         }
 
-        public IEnumerable<User> GetAllInactiveSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllInactiveSince(string applicationName, DateTime inactiveDate, int pageIndex,
+            int pageSize, out int totalRecords)
         {
-            if (UsersCollection.Count() == 0)
-            {
-                totalRecords = 0;
-                return Enumerable.Empty<User>();
-            }
+            var filter = UserFilter(applicationName, u => u.LastActivityDate <= inactiveDate);
+            var result = GetAll(filter, pageIndex, pageSize);
 
-            var users = UsersCollection
-                        .AsQueryable()
-                        .Where(user
-                            => user.ApplicationName == applicationName
-                            && user.LastActivityDate <= inactiveDate
-                            && user.IsDeleted == false);
-            totalRecords = users.Count();
-            return users
-                    .Skip(pageIndex * pageSize)
-                    .Take(pageSize);
+            totalRecords = result.Item2;
+            return result.Item1;
         }
 
-        public IEnumerable<User> GetAllInactiveAnonymSince(string applicationName, DateTime inactiveDate, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetAllInactiveAnonymSince(string applicationName, DateTime inactiveDate, int pageIndex,
+            int pageSize, out int totalRecords)
         {
-            if (UsersCollection.Count() == 0)
-            {
-                totalRecords = 0;
-                return Enumerable.Empty<User>();
-            }
+            var filter = UserFilter(applicationName, u => u.IsAnonymous && u.LastActivityDate <= inactiveDate);
+            var result = GetAll(filter, pageIndex, pageSize);
 
-            var users = UsersCollection
-                        .AsQueryable()
-                        .Where(user
-                            => user.ApplicationName == applicationName
-                            && user.LastActivityDate <= inactiveDate
-                            && user.IsAnonymous
-                            && user.IsDeleted == false);
-            totalRecords = users.Count();
-            return users
-                    .Skip(pageIndex * pageSize)
-                    .Take(pageSize);
+            totalRecords = result.Item2;
+            return result.Item1;
         }
 
-        public IEnumerable<User> GetInactiveSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetInactiveSinceByUserName(string applicationName, string username,
+            DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            if (UsersCollection.Count() == 0)
-            {
-                totalRecords = 0;
-                return Enumerable.Empty<User>();
-            }
+            username = username?.ToLowerInvariant();
 
-            var users = UsersCollection
-                        .AsQueryable()
-                        .Where(user
-                            => user.ApplicationName == applicationName
-                            && user.UsernameLowercase.Contains(username.ToLowerInvariant())
-                            && user.LastActivityDate <= userInactiveSinceDate
-                            && user.IsDeleted == false);
-            totalRecords = users.Count();
-            return users
-                    .Skip(pageIndex * pageSize)
-                    .Take(pageSize);
+            var filter = UserFilter(applicationName, u
+                => u.UsernameLowercase.Contains(username)
+                   && u.LastActivityDate <= userInactiveSinceDate);
+            var result = GetAll(filter, pageIndex, pageSize);
+
+            totalRecords = result.Item2;
+            return result.Item1;
         }
 
-        public IEnumerable<User> GetInactiveAnonymSinceByUserName(string applicationName, string username, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
+        public IEnumerable<User> GetInactiveAnonymSinceByUserName(string applicationName, string username,
+            DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords)
         {
-            if (UsersCollection.Count() == 0)
-            {
-                totalRecords = 0;
-                return Enumerable.Empty<User>();
-            }
+            username = username?.ToLowerInvariant();
 
-            var users = UsersCollection
-                        .AsQueryable()
-                        .Where(user
-                            => user.ApplicationName == applicationName
-                            && user.UsernameLowercase.Contains(username.ToLowerInvariant())
-                            && user.LastActivityDate <= userInactiveSinceDate
-                            && user.IsAnonymous
-                            && user.IsDeleted == false);
-            totalRecords = users.Count();
-            return users
-                    .Skip(pageIndex * pageSize)
-                    .Take(pageSize);
+            var filter = UserFilter(applicationName, u
+                => u.IsAnonymous
+                   && u.UsernameLowercase.Contains(username)
+                   && u.LastActivityDate <= userInactiveSinceDate);
+            var result = GetAll(filter, pageIndex, pageSize);
+
+            totalRecords = result.Item2;
+            return result.Item1;
         }
 
         public int GetUserForPeriodOfTime(string applicationName, TimeSpan timeSpan)
         {
-            return UsersCollection
-                    .AsQueryable()
-                    .Count(user
-                        => user.ApplicationName == applicationName
-                        && user.LastActivityDate > DateTime.UtcNow.Subtract(timeSpan));
+            var timeInPast = DateTime.UtcNow.Subtract(timeSpan);
+            return (int)usersCollection.Count(u
+               => u.ApplicationName == applicationName
+                  && u.LastActivityDate > timeInPast);
         }
+
         #endregion
 
         #region Role
+
         public void CreateRole(Role role)
         {
-            if (role.RoleName != null) role.RoleNameLowercased = role.RoleName.ToLowerInvariant();
+            role.RoleNameLowercased = role.RoleName?.ToLowerInvariant();
 
-            RolesCollection.Insert(role);
+            rolesCollection.InsertOne(role);
         }
 
         public void RemoveRole(string applicationName, string roleName)
         {
-            var query = new QueryDocument
-            {
-                new Dictionary<string, object>
-                {
-                    {Util.GetElementNameFor<Role>(_ => _.ApplicationName), applicationName},
-                    {Util.GetElementNameFor<Role>(_ => _.RoleNameLowercased), roleName.ToLowerInvariant()}
-                }
-            };
+            roleName = roleName?.ToLowerInvariant();
 
-            RolesCollection.Remove(query);
+            rolesCollection.DeleteMany(r
+                => r.ApplicationName == applicationName
+                   && r.RoleNameLowercased == roleName);
         }
 
         public string[] GetAllRoles(string applicationName)
         {
-            return RolesCollection
-                    .AsQueryable()
-                    .Where(role => role.ApplicationName == applicationName)
-                    .Select(role => role.RoleName)
-                    .ToArray();
+            return rolesCollection
+                .FindSync(role => role.ApplicationName == applicationName)
+                .ToList()
+                .Select(role => role.RoleName)
+                .ToArray();
         }
 
         public string[] GetRolesForUser(string applicationName, string username)
@@ -320,12 +221,8 @@ namespace MongoMembership.Mongo
             if (username.IsNullOrWhiteSpace())
                 return null;
 
-            User user = GetByUserName(applicationName, username);
-
-            if (user == null || user.Roles == null)
-                return null;
-
-            return user.Roles.ToArray();
+            var user = GetByUserName(applicationName, username);
+            return user?.Roles?.ToArray();
         }
 
         public string[] GetUsersInRole(string applicationName, string roleName)
@@ -333,110 +230,96 @@ namespace MongoMembership.Mongo
             if (roleName.IsNullOrWhiteSpace())
                 return null;
 
-            return UsersCollection
-                    .AsQueryable()
-                    .Where(user
-                        => user.ApplicationName == applicationName
-                        && (user.Roles.Contains(roleName.ToLowerInvariant()) || user.Roles.Contains(roleName)))
-                    .Select(user => user.Username)
-                    .ToArray();
+            return usersCollection
+                .FindSync(user
+                    => user.ApplicationName == applicationName
+                       && (user.Roles.Contains(roleName.ToLowerInvariant()) || user.Roles.Contains(roleName)))
+                .ToList()
+                .Select(user => user.Username)
+                .ToArray();
         }
 
         public bool IsUserInRole(string applicationName, string username, string roleName)
         {
-            if (username.IsNullOrWhiteSpace() || roleName.IsNullOrWhiteSpace())
-                return false;
+            var user = GetByUserName(applicationName, username);
+            if (user == null) return false;
 
-            return UsersCollection
-                    .AsQueryable()
-                    .Any(user
-                        => user.ApplicationName == applicationName
-                        && user.UsernameLowercase == username.ToLowerInvariant()
-                        && (user.Roles.Contains(roleName.ToLowerInvariant()) || user.Roles.Contains(roleName)));
+            return user.Roles.Any(r => string.Equals(r, roleName, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public bool IsRoleExists(string applicationName, string roleName)
         {
-            if (roleName.IsNullOrWhiteSpace())
-                return false;
+            roleName = roleName?.ToLowerInvariant();
 
-            return RolesCollection
-                    .AsQueryable()
-                    .Any(role
-                        => role.ApplicationName == applicationName
-                        && role.RoleNameLowercased == roleName.ToLowerInvariant());
+            return rolesCollection.FindSync(RoleFilter(applicationName, r => r.RoleNameLowercased == roleName)).Any();
         }
+
         #endregion
 
-        #region Private Methods
-        private static void RegisterClassMapping()
+        private static FilterDefinition<User> UserFilter(string applicationName, Expression<Func<User, bool>> extraFilter)
         {
-            if (!BsonClassMap.IsClassMapRegistered(typeof(User)))
-            {
-                // Initialize Mongo Mappings
-                BsonClassMap.RegisterClassMap<User>(cm =>
-                {
-                    cm.AutoMap();
-                    cm.SetIgnoreExtraElements(true);
-                    cm.SetIsRootClass(true);
-                    cm.MapIdField(c => c.Id);
-                    cm.MapProperty(c => c.ApplicationName).SetElementName("ApplicationName");
-                    cm.MapProperty(c => c.Username).SetElementName("Username");
-                    cm.MapProperty(c => c.UsernameLowercase).SetElementName("UsernameLowercase");
-                    cm.MapProperty(c => c.Comment).SetElementName("Comment");
-                    cm.MapProperty(c => c.CreateDate).SetElementName("CreateDate");
-                    cm.MapProperty(c => c.Email).SetElementName("Email");
-                    cm.MapProperty(c => c.EmailLowercase).SetElementName("EmailLowercase");
-                    cm.MapProperty(c => c.FailedPasswordAnswerAttemptCount).SetElementName("FailedPasswordAnswerAttemptCount");
-                    cm.MapProperty(c => c.FailedPasswordAttemptCount).SetElementName("FailedPasswordAttemptCount");
-                    cm.MapProperty(c => c.FailedPasswordAnswerAttemptWindowStart).SetElementName("FailedPasswordAnswerAttemptWindowStart");
-                    cm.MapProperty(c => c.FailedPasswordAttemptWindowStart).SetElementName("FailedPasswordAttemptWindowStart");
-                    cm.MapProperty(c => c.IsApproved).SetElementName("IsApproved");
-                    cm.MapProperty(c => c.IsDeleted).SetElementName("IsDeleted");
-                    cm.MapProperty(c => c.IsLockedOut).SetElementName("IsLockedOut");
-                    cm.MapProperty(c => c.LastActivityDate).SetElementName("LastActivityDate");
-                    cm.MapProperty(c => c.LastLockedOutDate).SetElementName("LastLockedOutDate");
-                    cm.MapProperty(c => c.LastLoginDate).SetElementName("LastLoginDate");
-                    cm.MapProperty(c => c.LastPasswordChangedDate).SetElementName("LastPasswordChangedDate");
-                    cm.MapProperty(c => c.Password).SetElementName("Password");
-                    cm.MapProperty(c => c.PasswordAnswer).SetElementName("PasswordAnswer");
-                    cm.MapProperty(c => c.PasswordQuestion).SetElementName("PasswordQuestion");
-                    cm.MapProperty(c => c.PasswordSalt).SetElementName("PasswordSalt");
-                    cm.MapProperty(c => c.Roles).SetElementName("Roles").SetIgnoreIfNull(true);
-                });
-            }
+            return Builders<User>.Filter.And(
+                Builders<User>.Filter.Eq(u => u.IsDeleted, false),
+                Builders<User>.Filter.Eq(u => u.ApplicationName, applicationName),
+                Builders<User>.Filter.Where(extraFilter)
+            );
+        }
 
-            if (!BsonClassMap.IsClassMapRegistered(typeof(Role)))
+        private static FilterDefinition<Role> RoleFilter(string applicationName, Expression<Func<Role, bool>> extraFilter)
+        {
+            return Builders<Role>.Filter.And(
+                Builders<Role>.Filter.Eq(u => u.ApplicationName, applicationName),
+                Builders<Role>.Filter.Where(extraFilter)
+            );
+        }
+
+        private Tuple<ICollection<User>, int> GetAll(FilterDefinition<User> filter, int pageIndex, int pageSize)
+        {
+            var options = new FindOptions<User>
             {
-                BsonClassMap.RegisterClassMap<Role>(cm =>
-                {
-                    cm.AutoMap();
-                    cm.SetIgnoreExtraElements(true);
-                    cm.SetIsRootClass(true);
-                    cm.MapProperty(c => c.ApplicationName).SetElementName("ApplicationName");
-                    cm.MapProperty(c => c.RoleName).SetElementName("RoleName");
-                    cm.MapProperty(c => c.RoleNameLowercased).SetElementName("RoleNameLowercased");
-                });
-            }
+                Skip = pageIndex * pageSize,
+                Limit = pageSize,
+            };
+            var users = usersCollection.FindSync(filter, options).ToList();
+            var total = (int)usersCollection.Count(filter);
+            return new Tuple<ICollection<User>, int>(users, total);
         }
 
         private void CreateIndex()
         {
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.EmailLowercase));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.Roles), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.LastActivityDate), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.IsAnonymous), Util.GetElementNameFor<User>(_ => _.UsernameLowercase));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.UsernameLowercase), Util.GetElementNameFor<User>(_ => _.IsAnonymous));
-            UsersCollection.EnsureIndex(Util.GetElementNameFor<User>(_ => _.ApplicationName), Util.GetElementNameFor<User>(_ => _.LastActivityDate));
+            var userApplicationNameKey = Builders<User>.IndexKeys.Text(_ => _.ApplicationName);
+            var emailLowercaseKey = Builders<User>.IndexKeys.Text(_ => _.EmailLowercase);
+            var usernameLowercaseKey = Builders<User>.IndexKeys.Text(_ => _.UsernameLowercase);
+            var rolesKey = Builders<User>.IndexKeys.Text(_ => _.Roles);
+            var isAnonymousKey = Builders<User>.IndexKeys.Ascending(_ => _.Roles);
+            var lastActivityDateKey = Builders<User>.IndexKeys.Ascending(_ => _.LastActivityDate);
 
-            RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName));
-            RolesCollection.EnsureIndex(Util.GetElementNameFor<Role>(_ => _.ApplicationName), Util.GetElementNameFor<Role>(_ => _.RoleNameLowercased));
+            usersCollection.Indexes.CreateMany(new[]
+            {
+                new CreateIndexModel<User>(userApplicationNameKey),
+                ModelFor(userApplicationNameKey, emailLowercaseKey),
+                ModelFor(userApplicationNameKey, usernameLowercaseKey),
+                ModelFor(userApplicationNameKey, rolesKey),
+                ModelFor(userApplicationNameKey, rolesKey, usernameLowercaseKey),
+                ModelFor(userApplicationNameKey, isAnonymousKey),
+                ModelFor(userApplicationNameKey, isAnonymousKey, lastActivityDateKey),
+                ModelFor(userApplicationNameKey, isAnonymousKey, lastActivityDateKey, usernameLowercaseKey),
+                ModelFor(userApplicationNameKey, isAnonymousKey, usernameLowercaseKey),
+                ModelFor(userApplicationNameKey, lastActivityDateKey)
+            });
+
+            var roleApplicationNameKey = Builders<Role>.IndexKeys.Text(_ => _.ApplicationName);
+            var roleNameLowercasedKey = Builders<Role>.IndexKeys.Text(_ => _.RoleNameLowercased);
+            rolesCollection.Indexes.CreateMany(new[]
+            {
+                new CreateIndexModel<Role>(roleApplicationNameKey),
+                ModelFor(roleApplicationNameKey, roleNameLowercasedKey)
+            });
         }
-        #endregion
+
+        private static CreateIndexModel<T> ModelFor<T>(params IndexKeysDefinition<T>[] keys)
+        {
+            return new CreateIndexModel<T>(Builders<T>.IndexKeys.Combine(keys));
+        }
     }
 }

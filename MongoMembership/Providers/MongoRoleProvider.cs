@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Specialized;
-using System.Configuration;
+﻿using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Web.Hosting;
@@ -13,16 +11,16 @@ namespace MongoMembership.Providers
     public class MongoRoleProvider : RoleProvider
     {
         internal string MongoConnectionString { get; private set; }
-        private IMongoGateway mongoGateway;
+        private IMongoGateway gateway;
 
         public override string ApplicationName { get; set; }
 
         public override void Initialize(string name, NameValueCollection config)
         {
-            this.ApplicationName = Util.GetValue(config["applicationName"], HostingEnvironment.ApplicationVirtualPath);
+            ApplicationName = Util.GetValue(config["applicationName"], HostingEnvironment.ApplicationVirtualPath);
 
-            this.MongoConnectionString = Util.GetConnectionStringByName(Util.GetValue(config["connectionStringKeys"], string.Empty));
-            this.mongoGateway = new MongoGateway(MongoConnectionString);
+            MongoConnectionString = Util.GetConnectionStringByName(Util.GetValue(config["connectionStringKeys"], string.Empty));
+            gateway = new MongoGateway(MongoConnectionString);
 
             base.Initialize(name, config);
         }
@@ -34,16 +32,16 @@ namespace MongoMembership.Providers
 
             foreach (var username in usernames)
             {
-                var user = this.mongoGateway.GetByUserName(this.ApplicationName, username);
+                var user = gateway.GetByUserName(ApplicationName, username);
 
                 if (user == null)
-                    throw new ProviderException("The user '{0}' was not found.".F(username));
+                    throw new ProviderException($"The user '{username}' was not found.");
 
                 var username1 = username; //Closure solving
                 foreach (var roleName in roleNames.Where(roleName => !IsUserInRole(username1, roleName)))
                 {
                     user.Roles.Add(roleName.ToLowerInvariant());
-                    this.mongoGateway.UpdateUser(user);
+                    gateway.UpdateUser(user);
                 }
             }
         }
@@ -55,12 +53,12 @@ namespace MongoMembership.Providers
 
             var role = new Role
             {
-                ApplicationName = this.ApplicationName,
+                ApplicationName = ApplicationName,
                 RoleName = roleName,
                 RoleNameLowercased = roleName.ToLowerInvariant()
             };
 
-            this.mongoGateway.CreateRole(role);
+            gateway.CreateRole(role);
         }
 
         public override bool DeleteRole(string roleName, bool throwOnPopulatedRole)
@@ -74,37 +72,19 @@ namespace MongoMembership.Providers
                 throw new ProviderException("This role cannot be deleted because there are users present in it.");
 
             RemoveUsersFromRoles(users, new[] { roleName });
-            this.mongoGateway.RemoveRole(this.ApplicationName, roleName);
+            gateway.RemoveRole(ApplicationName, roleName);
             return true;
         }
 
-        public override string[] FindUsersInRole(string roleName, string usernameToMatch)
-        {
-            if (!RoleExists(roleName))
-                return null;
+        public override string[] FindUsersInRole(string roleName, string usernameToMatch) => RoleExists(roleName) ? gateway.GetUsersInRole(ApplicationName, roleName) : null;
 
-            return this.mongoGateway.GetUsersInRole(this.ApplicationName, roleName);
-        }
+        public override string[] GetAllRoles() => gateway.GetAllRoles(ApplicationName);
 
-        public override string[] GetAllRoles()
-        {
-            return this.mongoGateway.GetAllRoles(this.ApplicationName);
-        }
+        public override string[] GetRolesForUser(string username) => gateway.GetRolesForUser(ApplicationName, username);
 
-        public override string[] GetRolesForUser(string username)
-        {
-            return this.mongoGateway.GetRolesForUser(this.ApplicationName, username);
-        }
+        public override string[] GetUsersInRole(string roleName) => gateway.GetUsersInRole(ApplicationName, roleName);
 
-        public override string[] GetUsersInRole(string roleName)
-        {
-            return this.mongoGateway.GetUsersInRole(this.ApplicationName, roleName);
-        }
-
-        public override bool IsUserInRole(string username, string roleName)
-        {
-            return this.mongoGateway.IsUserInRole(this.ApplicationName, username, roleName);
-        }
+        public override bool IsUserInRole(string username, string roleName) => gateway.IsUserInRole(ApplicationName, username, roleName);
 
         public override void RemoveUsersFromRoles(string[] usernames, string[] roleNames)
         {
@@ -114,16 +94,13 @@ namespace MongoMembership.Providers
                 {
                     if (!IsUserInRole(username, roleName)) continue;
 
-                    var user = this.mongoGateway.GetByUserName(this.ApplicationName, username);
+                    var user = gateway.GetByUserName(ApplicationName, username);
                     user.Roles.Remove(roleName.ToLowerInvariant());
-                    this.mongoGateway.UpdateUser(user);
+                    gateway.UpdateUser(user);
                 }
             }
         }
 
-        public override bool RoleExists(string roleName)
-        {
-            return this.mongoGateway.IsRoleExists(this.ApplicationName, roleName);
-        }
+        public override bool RoleExists(string roleName) => gateway.IsRoleExists(ApplicationName, roleName);
     }
 }
