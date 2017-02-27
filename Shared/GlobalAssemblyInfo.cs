@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 
 [assembly: AssemblyProduct("MongoMembership")]
 
@@ -6,6 +7,7 @@
 [assembly: AssemblyCopyright("Copyright © Mykola Kush 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+[assembly: InternalsVisibleTo("MongoMembership.Tests")]
 
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug")]
