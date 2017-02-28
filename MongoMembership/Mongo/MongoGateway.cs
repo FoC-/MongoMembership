@@ -287,39 +287,23 @@ namespace MongoMembership.Mongo
 
         private void CreateIndex()
         {
-            var userApplicationNameKey = Builders<User>.IndexKeys.Text(_ => _.ApplicationName);
-            var emailLowercaseKey = Builders<User>.IndexKeys.Text(_ => _.EmailLowercase);
-            var usernameLowercaseKey = Builders<User>.IndexKeys.Text(_ => _.UsernameLowercase);
-            var rolesKey = Builders<User>.IndexKeys.Text(_ => _.Roles);
-            var isAnonymousKey = Builders<User>.IndexKeys.Ascending(_ => _.Roles);
-            var lastActivityDateKey = Builders<User>.IndexKeys.Ascending(_ => _.LastActivityDate);
+            var combinedUserIndex = usersCollection.Indexes.CreateOne(
+                Builders<User>.IndexKeys.Combine(
+                    Builders<User>.IndexKeys.Text(_ => _.ApplicationName),
+                    Builders<User>.IndexKeys.Text(_ => _.EmailLowercase),
+                    Builders<User>.IndexKeys.Text(_ => _.UsernameLowercase),
+                    Builders<User>.IndexKeys.Text(_ => _.Roles),
+                    Builders<User>.IndexKeys.Ascending(_ => _.IsAnonymous),
+                    Builders<User>.IndexKeys.Ascending(_ => _.LastActivityDate)
+                    ),
+                new CreateIndexOptions() { Name = "UserCollectionIndex", Background = true });
 
-            usersCollection.Indexes.CreateMany(new[]
-            {
-                new CreateIndexModel<User>(userApplicationNameKey),
-                ModelFor(userApplicationNameKey, emailLowercaseKey),
-                ModelFor(userApplicationNameKey, usernameLowercaseKey),
-                ModelFor(userApplicationNameKey, rolesKey),
-                ModelFor(userApplicationNameKey, rolesKey, usernameLowercaseKey),
-                ModelFor(userApplicationNameKey, isAnonymousKey),
-                ModelFor(userApplicationNameKey, isAnonymousKey, lastActivityDateKey),
-                ModelFor(userApplicationNameKey, isAnonymousKey, lastActivityDateKey, usernameLowercaseKey),
-                ModelFor(userApplicationNameKey, isAnonymousKey, usernameLowercaseKey),
-                ModelFor(userApplicationNameKey, lastActivityDateKey)
-            });
-
-            var roleApplicationNameKey = Builders<Role>.IndexKeys.Text(_ => _.ApplicationName);
-            var roleNameLowercasedKey = Builders<Role>.IndexKeys.Text(_ => _.RoleNameLowercased);
-            rolesCollection.Indexes.CreateMany(new[]
-            {
-                new CreateIndexModel<Role>(roleApplicationNameKey),
-                ModelFor(roleApplicationNameKey, roleNameLowercasedKey)
-            });
-        }
-
-        private static CreateIndexModel<T> ModelFor<T>(params IndexKeysDefinition<T>[] keys)
-        {
-            return new CreateIndexModel<T>(Builders<T>.IndexKeys.Combine(keys));
+            var combinedRoleCollectionKey = rolesCollection.Indexes.CreateOne(
+                Builders<Role>.IndexKeys.Combine(
+                    Builders<Role>.IndexKeys.Text(_ => _.ApplicationName),
+                    Builders<Role>.IndexKeys.Text(_ => _.RoleNameLowercased)
+                    ),
+                new CreateIndexOptions() { Name = "RoleCollectionIndex", Background = true });
         }
     }
 }
