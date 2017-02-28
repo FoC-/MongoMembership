@@ -97,7 +97,6 @@ namespace MongoMembership.Tests.Mongo
 
         private static IMongoGateway mongo;
         private static string applicationName;
-        private static int totalRecords;
         private static User user_created;
         private static User user;
     }
