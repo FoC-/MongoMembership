@@ -1,4 +1,4 @@
-MongoMembership
+MongoMembership [![Build status](https://ci.appveyor.com/api/projects/status/d07wtplb0tccxdlr?svg=true)](https://ci.appveyor.com/project/FoC-/mongomembership)
 ===============
 
 Contain ASP.NET providers for working with Membership, Role, Profile via MongoDB.
