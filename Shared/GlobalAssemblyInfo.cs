@@ -15,7 +15,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("Release")]
 #endif
 
-[assembly: AssemblyVersion("0.1.0.0")]
+[assembly: AssemblyVersion("0.1.1.0")]
 //Change MAJOR version before release
 //Change MINOR version when you add functionality in a backwards-compatible manner
 //Change PATCH version when you make backwards-compatible bugfixes
