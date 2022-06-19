@@ -1,0 +1,4 @@
+Core/
+libmongocrypt.dylib
+libmongocrypt.so
+mongocrypt.dll
