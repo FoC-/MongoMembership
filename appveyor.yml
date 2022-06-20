@@ -1,9 +1,0 @@
-version: 1.1.{build}
-image: Visual Studio 2019
-services: mongodb
-before_build:
-- ps: nuget restore
-build:
-  verbosity: minimal
-test_script:
-- ps: .\packages\Machine.Specifications.Runner.Console.1.0.0\tools\mspec-x86-clr4.exe MongoMembership.Tests\bin\Debug\MongoMembership.Tests.dll
