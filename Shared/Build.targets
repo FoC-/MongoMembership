@@ -7,7 +7,8 @@
     <ShouldExecute Condition="'$(ConfigurationName)' == 'Release'">true</ShouldExecute>
 
     <!-- Tools -->
-    <NugetExePath Condition=" '$(NugetExePath)' == '' ">$(PkgNuget_CommandLine)\tools\NuGet.exe</NugetExePath>
+    <NugetPackages>$(MSBuildThisFileDirectory)..\packages</NugetPackages>
+    <NugetExePath Condition=" '$(NugetExePath)' == '' ">$(NugetPackages)\NuGet.CommandLine.3.5.0\tools\NuGet.exe</NugetExePath>
 
     <!-- Project files -->
     <NuspecFile>$(ProjectDir)$(ProjectName).nuspec</NuspecFile>

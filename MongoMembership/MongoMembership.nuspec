@@ -2,22 +2,19 @@
 <package >
   <metadata>
     <id>MongoMembership</id>
-    <version>2.0.0</version>
+    <version>1.1.0</version>
     <title>Mongo Membership</title>
     <authors>Mykola Kush</authors>
     <owners>Mykola Kush</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Store user profiles and roles in MongoDB storage. And allow easy access to use thems from MemberShipProvider, ProfileProvider, RoleProvider in ASP.NET Project on github: https://github.com/FoC-/MongoMembership</description>
-    <copyright>Copyright © Mykola Kush 2022</copyright>
+    <copyright>Copyright © Mykola Kush 2017</copyright>
     <tags>mongo membership providers role profile mvc asp.net</tags>
     <dependencies>
-      <group targetFramework=".NETFramework4.7.2">
-          <dependency id="MongoDB.Driver" version="2.16.0" />
-      </group>
+      <dependency id="MongoDB.Driver" version="2.4.2" />
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\MongoMembership.dll" target="lib\net472" />
-    <file src="content\web.config.transform" target="content\web.config.transform"/>
+    <file src="bin\Release\MongoMembership.dll" target="lib\net45" />
   </files>
 </package>
