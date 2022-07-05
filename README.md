@@ -1,5 +1,7 @@
-MongoMembership [![Build status](https://ci.appveyor.com/api/projects/status/d07wtplb0tccxdlr?svg=true)](https://ci.appveyor.com/project/FoC-/mongomembership) [![NuGet Version](https://img.shields.io/nuget/v/MongoMembership.svg)](https://nuget.org/packages/MongoMembership)
+MongoMembership
 ===============
+
+[![build](https://github.com/FoC-/MongoMembership/actions/workflows/build.yml/badge.svg)](https://github.com/FoC-/MongoMembership/actions/workflows/build.yml) [![NuGet Version](https://img.shields.io/nuget/v/MongoMembership.svg)](https://nuget.org/packages/MongoMembership)
 
 Contain ASP.NET providers for working with Membership, Role, Profile via MongoDB.
 

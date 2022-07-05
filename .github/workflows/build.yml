@@ -1,0 +1,26 @@
+name: build
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+      - name: Restore packages
+        run: MSBuild.exe -t:restore -p:RestorePackagesConfig=true
+      - name: Build
+        run: MSBuild.exe -p:Configuration=Release
+      - name: Unit test with MSpec
+        run: |
+          $TestProject = "MongoMembership.Tests"
+          $TestAssembly = Join-Path $TestProject "bin\Release" | Join-Path -ChildPath { $TestProject + ".dll" }
+          $ProjectFile = [XML](Get-Content (Join-Path $TestProject ( $TestProject + ".csproj") ))
+          $RunnerVersion = ($ProjectFile.Project.ItemGroup.PackageReference | Where {$_.Include -eq "Machine.Specifications.Runner.Console"}).Version
+          $MSpec = Join-Path $HOME ".nuget\packages\machine.specifications.runner.console" | Join-Path -ChildPath $RunnerVersion | Join-Path -ChildPath "tools\mspec-clr4.exe"
+          & $MSpec $TestAssembly
